@@ -1,20 +1,27 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #0f5132;
-  --color-brand-dark: #0a3a24;
-  --color-brand-soft: #e6f2ec;
-  --color-accent: #b45309;
-  --color-ink: #111827;
-  --color-muted: #4b5563;
-  --color-line: #d1d5db;
-  --color-paper: #f7f7f5;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-paper: #09090c;
+  --color-surface: #131318;
+  --color-surface-2: #1c1c24;
+  --color-line: #2c2c38;
+  --color-ink: #f6f6f8;
+  --color-muted: #a3a3b2;
+  --color-brand: #ffb21e;
+  --color-brand-dark: #f59e0b;
+  --color-brand-soft: #2a220f;
+  --color-hot: #ff4d6d;
+  --color-cool: #38bdf8;
+  --color-violet: #a78bfa;
+  --color-lime: #a3e635;
+  --font-sans: var(--font-body), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: var(--font-head), var(--font-body), system-ui, sans-serif;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+  color-scheme: dark;
 }
 
 body {
@@ -27,9 +34,62 @@ body {
   input, select, textarea, button {
     font: inherit;
   }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /* Red, white and blue barber pole. */
+  .pole {
+    background: repeating-linear-gradient(-45deg, #ff3b4e 0 10px, #ffffff 10px 20px, #2f6bff 20px 30px, #ffffff 30px 40px);
+  }
+  .gold-text {
+    background: linear-gradient(100deg, #ffe08a, #ffb21e 45%, #ff7a45);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .gold-grad {
+    background: linear-gradient(135deg, #ffd166 0%, #ffb21e 45%, #ff7a45 100%);
+  }
+  .glow {
+    text-shadow: 0 0 24px rgba(255, 178, 30, 0.55), 0 0 2px rgba(255, 178, 30, 0.8);
+  }
+  .mesh {
+    background:
+      radial-gradient(60% 50% at 10% 0%, rgba(255, 178, 30, 0.22), transparent 70%),
+      radial-gradient(50% 40% at 100% 10%, rgba(255, 77, 109, 0.20), transparent 70%),
+      radial-gradient(60% 50% at 50% 100%, rgba(56, 189, 248, 0.14), transparent 70%),
+      var(--color-paper);
+  }
+  .shine {
+    box-shadow: 0 10px 30px -10px rgba(255, 178, 30, 0.55);
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(255, 178, 30, 0.55); }
+  100% { box-shadow: 0 0 0 22px rgba(255, 178, 30, 0); }
+}
+.pulse-ring { animation: pulse-ring 1.6s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-ring { animation: none; }
 }
 
 @media print {
+  :root {
+    --color-paper: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-2: #ffffff;
+    --color-ink: #000000;
+    --color-muted: #333333;
+    --color-line: #999999;
+  }
   .no-print { display: none !important; }
-  body { background: white; }
+  body { background: white; color: black; }
 }

@@ -82,7 +82,7 @@ function ClientSearch({ onPick, onBack }: { onPick: (c: Client) => void; onBack:
       {list === null ? <p className="text-muted">{s.app.loading}</p> : list.length === 0 ? <p className="text-muted">{s.app.none}</p> : null}
       {list?.map((c) => (
         <button key={c.id} onClick={() => onPick(c)}
-                className="flex min-h-14 w-full items-center justify-between rounded-xl border-2 border-line bg-white px-4 text-left">
+                className="flex min-h-14 w-full items-center justify-between rounded-xl border border-line bg-surface px-4 text-left">
           <span className="text-lg font-bold">{c.first_name}</span>
           <span className="text-muted tabular-nums">…{c.phone.slice(-3)}</span>
         </button>
@@ -110,7 +110,7 @@ function NewClientForm({ barberName, onDone, onBack }: { barberName: string; onD
       <ErrorNote code={err} />
       <Field label={s.code.clientFirstName}><Input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="given-name" /></Field>
       <Field label={s.code.clientPhone}><Input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" required placeholder="0712 345 678" /></Field>
-      <label className="flex items-start gap-3 rounded-xl border-2 border-line bg-white p-3">
+      <label className="flex items-start gap-3 rounded-xl border border-line bg-surface p-3">
         <input type="checkbox" className="mt-1 size-6 shrink-0 accent-brand" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
         <span className="text-base">{s.code.consent(barberName)}</span>
       </label>

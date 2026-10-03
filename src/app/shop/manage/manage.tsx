@@ -15,7 +15,7 @@ function RolePicker({ value, onChange }: { value: Role[]; onChange: (r: Role[]) 
   return (
     <div className="grid grid-cols-2 gap-2">
       {ROLES.map((r) => (
-        <label key={r} className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-line px-3">
+        <label key={r} className="flex min-h-12 items-center gap-2 rounded-xl border border-line px-3">
           <input type="checkbox" className="size-5 accent-brand" checked={value.includes(r)}
                  onChange={(e) => onChange(e.target.checked ? [...value, r] : value.filter((x) => x !== r))} />
           <span className="text-sm font-semibold">{s.shop.role[r]}</span>

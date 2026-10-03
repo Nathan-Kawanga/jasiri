@@ -14,6 +14,7 @@ export type Profile = {
   is_barber: boolean;
   handle: string | null;
   about: string | null;
+  photo_path: string | null;
   slot_minutes: number;
   is_platform_admin: boolean;
   suspended: boolean;

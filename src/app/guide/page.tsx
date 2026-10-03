@@ -7,7 +7,7 @@ export default function GuideIndex() {
     <Page title="How to use Jasiri">
       <div className="grid gap-3">
         {Object.entries(guides).map(([k, g]) => (
-          <Link key={k} href={`/guide/${k}`} className="flex min-h-16 items-center rounded-2xl border-2 border-line bg-white px-4 text-lg font-bold">{g.title}</Link>
+          <Link key={k} href={`/guide/${k}`} className="flex min-h-16 items-center rounded-2xl border border-line bg-surface px-4 text-lg font-bold">{g.title}</Link>
         ))}
       </div>
     </Page>

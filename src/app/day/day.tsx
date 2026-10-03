@@ -123,7 +123,7 @@ function ManualBooking({ day, barberName, onDone }: { day: string; barberName: s
           <>
             <Input value={q} onChange={(e) => search(e.target.value)} placeholder={s.code.searchClients} />
             {found.map((c) => (
-              <button type="button" key={c.id} onClick={() => setClient(c)} className="flex min-h-12 w-full items-center justify-between rounded-xl border-2 border-line bg-white px-3">
+              <button type="button" key={c.id} onClick={() => setClient(c)} className="flex min-h-12 w-full items-center justify-between rounded-xl border border-line bg-surface px-3">
                 <b>{c.first_name}</b><span className="text-muted">…{c.phone.slice(-3)}</span>
               </button>
             ))}

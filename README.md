@@ -23,6 +23,7 @@ The app never handles money and never records how a client paid.
 | Money views | Staff earnings (today, week, month), cashier payout sheet (print, Excel, PDF, CSV), daily summary (what the till should hold). |
 | Flags | Confirmed but unpaid after the day ended; paid amount different from staff totals; voids per person; handovers; voided and remade under a different barber within 10 minutes; open problem reports. |
 | Admin | All accounts and shops, suspend, mark barbers paid until a date, payment instructions and price, any shop's audit log, delete a client record on request, PIN reset, platform usage and the kill criteria. |
+| Photos | Barbers add a profile photo and up to 12 photos of their cuts (shrunk on the phone to ~100 KB). They show on the booking page as a cover, avatar and "My work" gallery. |
 | Audit | Every change is written to an append-only log (who, which roles, what, when, before, after). Phone numbers never enter it. |
 
 ### Changed from the original spec (agreed in planning)
@@ -98,7 +99,8 @@ and the PIN lockout, since SMS was dropped.
    In Auth settings, turn off public sign-ups (the server creates accounts) and email confirmations.
 2. Create a Vercel project from this repo. Set `NEXT_PUBLIC_SUPABASE_URL`,
    `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `NEXT_PUBLIC_SITE_URL`.
-3. Make yourself platform admin:
+3. Database updates after the first setup are in `supabase/update-*.sql`; run each once in the SQL Editor, in order.
+4. Make yourself platform admin:
    `update public.profiles set is_platform_admin = true where phone = '+2547XXXXXXXX';`
 
 Vercel's free Hobby plan does not allow commercial use, so move to Pro once shops pay. Storing

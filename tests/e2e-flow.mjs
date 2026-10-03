@@ -41,11 +41,11 @@ await brian.fill('input[inputmode="numeric"]', "300");
 await shot(brian, "1_amount");
 await brian.getByRole("button", { name: "Make code" }).dblclick(); // double tap must still make one code
 await brian.getByRole("button", { name: "Confirm my code" }).waitFor();
-const code = (await brian.locator(".font-mono.text-7xl").textContent()).trim();
+const code = (await brian.getByTestId("code").textContent()).trim();
 await shot(brian, "2_show_code");
 await brian.getByRole("button", { name: "Confirm my code" }).click();
 await brian.getByText("Send the client to").waitFor();
-const sentTo = await brian.locator(".text-4xl.font-black").textContent();
+const sentTo = await brian.getByTestId("sent-to").textContent();
 await shot(brian, "3_send_to");
 console.log(`Code ${code} sent to ${sentTo}`);
 const mary = staffPages[sentTo.trim()];

@@ -15,7 +15,7 @@ export default async function SummaryPage({ searchParams }: PageProps<"/shop/sum
     <Page title={s.manager.summaryTitle}>
       <DayNav base="/shop/summary" day={day} />
       <div className="space-y-3">
-        <div className="rounded-2xl bg-ink p-4 text-white">
+        <div className="rounded-2xl gold-grad p-4 text-black">
           <div className="text-sm opacity-80">{s.manager.till}</div>
           <div className="text-4xl font-black tabular-nums">{kes(x.till_total)}</div>
         </div>

@@ -18,8 +18,8 @@ export default async function PayoutPage({ searchParams }: PageProps<"/shop/payo
       <DayNav base="/shop/payout" day={day} />
       <div className="mb-2 hidden text-xl font-bold print:block">{shop.name} · {day}</div>
       {rows.length === 0 ? <Empty>{s.app.none}</Empty> : (
-        <table className="w-full border-collapse bg-white text-left">
-          <thead><tr className="border-b-2 border-ink text-sm">
+        <table className="w-full border-collapse bg-surface text-left">
+          <thead><tr className="border-b-2 border-brand text-sm">
             <th className="p-2">{s.manager.person}</th><th className="p-2 text-right">{s.manager.paidCodes}</th>
             <th className="p-2 text-right">{s.manager.earned}</th><th className="p-2 text-right">{s.manager.openCodes}</th>
           </tr></thead>
@@ -37,9 +37,9 @@ export default async function PayoutPage({ searchParams }: PageProps<"/shop/payo
         </table>
       )}
       <div className="no-print mt-5 grid grid-cols-3 gap-2">
-        <a href={exp("xlsx")} className="min-h-12 rounded-xl border-2 border-brand py-3 text-center font-semibold text-brand">{s.app.downloadExcel}</a>
-        <a href={exp("pdf")} className="min-h-12 rounded-xl border-2 border-brand py-3 text-center font-semibold text-brand">{s.app.downloadPdf}</a>
-        <a href={exp("csv")} className="min-h-12 rounded-xl border-2 border-brand py-3 text-center font-semibold text-brand">{s.app.downloadCsv}</a>
+        <a href={exp("xlsx")} className="min-h-12 rounded-xl border border-brand py-3 text-center font-semibold text-brand">{s.app.downloadExcel}</a>
+        <a href={exp("pdf")} className="min-h-12 rounded-xl border border-brand py-3 text-center font-semibold text-brand">{s.app.downloadPdf}</a>
+        <a href={exp("csv")} className="min-h-12 rounded-xl border border-brand py-3 text-center font-semibold text-brand">{s.app.downloadCsv}</a>
       </div>
       <div className="mt-2"><PrintButton label={s.app.print} /></div>
     </Page>

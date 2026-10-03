@@ -2,17 +2,50 @@ import Link from "next/link";
 import { requireContext } from "@/lib/context";
 import { s } from "@/lib/strings";
 import { dayLabel } from "@/lib/format";
-import { LinkButton, Notice } from "@/components/ui";
+import { photoUrl } from "@/lib/photos";
+import { Notice } from "@/components/ui";
+import { Icon, type IconName } from "@/components/icons";
 import { switchShop } from "./shop-actions";
 
-function Tile({ href, label, primary }: { href: string; label: string; primary?: boolean }) {
+const tones = {
+  gold: "from-amber-400/25 to-amber-400/0 text-amber-300",
+  hot: "from-rose-500/25 to-rose-500/0 text-rose-300",
+  cool: "from-sky-400/25 to-sky-400/0 text-sky-300",
+  violet: "from-violet-400/25 to-violet-400/0 text-violet-300",
+  lime: "from-lime-400/25 to-lime-400/0 text-lime-300",
+  teal: "from-teal-400/25 to-teal-400/0 text-teal-300",
+};
+
+function Tile({ href, label, icon, tone }: { href: string; label: string; icon: IconName; tone: keyof typeof tones }) {
   return (
-    <Link href={href}
-      className={`flex min-h-20 items-center justify-center rounded-2xl p-3 text-center text-lg font-bold active:scale-[0.98] ${
-        primary ? "col-span-2 min-h-24 bg-brand text-2xl text-white" : "border-2 border-line bg-white text-ink"}`}>
-      {label}
+    <Link href={href} className="group relative flex min-h-28 flex-col justify-between overflow-hidden rounded-3xl border border-line bg-surface p-4 active:scale-[0.97]">
+      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tones[tone]} opacity-60`} />
+      <span className={`relative inline-flex size-11 items-center justify-center rounded-2xl bg-black/30 ${tones[tone].split(" ").pop()}`}>
+        <Icon name={icon} />
+      </span>
+      <span className="relative mt-3 text-base font-bold leading-tight">{label}</span>
     </Link>
   );
+}
+
+function HeroTile({ href, label, hint, icon }: { href: string; label: string; hint: string; icon: IconName }) {
+  return (
+    <Link href={href} className="gold-grad shine relative col-span-2 flex min-h-32 items-center justify-between overflow-hidden rounded-3xl p-5 text-black active:scale-[0.98]">
+      <div>
+        <div className="font-display text-3xl font-extrabold">{label}</div>
+        <div className="text-sm font-semibold text-black/70">{hint}</div>
+      </div>
+      <span className="inline-flex size-16 items-center justify-center rounded-full bg-black/85 text-brand">
+        <Icon name={icon} size={30} />
+      </span>
+      <div className="pole absolute bottom-0 left-0 h-1.5 w-full opacity-70" />
+    </Link>
+  );
+}
+
+function greeting() {
+  const h = Number(new Intl.DateTimeFormat("en-KE", { timeZone: "Africa/Nairobi", hour: "numeric", hour12: false }).format(new Date()));
+  return h < 12 ? s.home.goodMorning : h < 17 ? s.home.goodAfternoon : s.home.goodEvening;
 }
 
 export default async function Home() {
@@ -20,79 +53,94 @@ export default async function Home() {
   const has = (r: string) => roles.includes(r as never);
   const pending = shops.filter((m) => m.status === "pending");
   const first = profile.full_name.split(" ")[0];
+  const avatar = photoUrl(profile.photo_path);
 
   return (
-    <main className="mx-auto w-full max-w-xl px-4 pb-16 pt-4">
-      <header className="mb-4 flex items-center justify-between">
-        <div>
-          <div className="text-2xl font-black text-brand">{s.app.name}</div>
-          <div className="text-muted">{s.home.hello}, {first}</div>
+    <main className="mesh min-h-dvh">
+      <div className="mx-auto w-full max-w-xl px-4 pb-20 pt-5">
+        <header className="mb-5 flex items-center justify-between">
+          <div className="font-display text-2xl font-extrabold"><span className="gold-text">Jasiri</span></div>
+          <Link href="/account" aria-label={s.home.account}
+            className="inline-flex size-12 items-center justify-center overflow-hidden rounded-full border border-line bg-surface">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {avatar ? <img src={avatar} alt="" className="size-full object-cover" /> : <Icon name="user" />}
+          </Link>
+        </header>
+
+        <section className="mb-5">
+          <p className="text-muted">{greeting()},</p>
+          <h1 className="font-display text-4xl font-extrabold leading-tight">{first} <span className="inline-block">✂️</span></h1>
+        </section>
+
+        {profile.subscription === "due" ? (
+          <div className="mb-4"><Notice tone="warn">
+            <b>{s.home.payDue}</b><br />{s.app.kes} {profile.monthly_price_kes} {s.home.perMonth}. {profile.payment_instructions}
+          </Notice></div>
+        ) : profile.subscription === "trial" ? (
+          <p className="mb-4 inline-block rounded-full bg-brand/15 px-3 py-1 text-sm font-semibold text-brand">{s.home.trialEnds}: {dayLabel(profile.trial_ends_at)}</p>
+        ) : null}
+
+        {current ? (
+          <section className="mb-4 overflow-hidden rounded-3xl border border-line bg-surface">
+            <div className="flex items-center gap-3 p-4">
+              <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-brand/15 text-brand"><Icon name="store" /></span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-display text-xl font-bold">{current.name}</div>
+                <div className="truncate text-sm text-muted">{current.area} · {current.roles.map((r) => s.shop.role[r]).join(", ")}</div>
+              </div>
+            </div>
+            {usableShops.length > 1 ? (
+              <form action={switchShop} className="flex gap-2 border-t border-line p-3">
+                <select name="shop_id" defaultValue={current.shop_id} className="min-h-12 flex-1 rounded-xl border border-line bg-surface-2 px-2 text-ink">
+                  {usableShops.map((m) => <option key={m.shop_id} value={m.shop_id}>{m.name}</option>)}
+                </select>
+                <button className="min-h-12 rounded-xl bg-surface-2 px-3 font-semibold">{s.home.switchShop}</button>
+              </form>
+            ) : null}
+          </section>
+        ) : (
+          <div className="mb-4"><Notice>{s.home.noShop} {profile.is_barber ? s.home.noShopBarber : null}</Notice></div>
+        )}
+
+        {pending.map((m) => (
+          <div key={m.membership_id} className="mb-3"><Notice tone="warn"><b>{m.name}</b>: {s.home.pending}</Notice></div>
+        ))}
+
+        <div className="grid grid-cols-2 gap-3">
+          {current && has("barber") ? <HeroTile href="/code/new" label={s.home.newCode} hint={s.home.newCodeHint} icon="scissors" /> : null}
+          {current && has("service_staff") && !has("barber") ? <HeroTile href="/queue" label={s.home.queue} hint={s.home.queueHint} icon="sparkles" /> : null}
+          {current && has("cashier") && !has("barber") && !has("service_staff") ? <HeroTile href="/cashier" label={s.home.cashier} hint={s.home.cashierHint} icon="cash" /> : null}
+          {current && has("service_staff") && has("barber") ? <Tile href="/queue" label={s.home.queue} icon="sparkles" tone="hot" /> : null}
+          {current && has("cashier") && (has("barber") || has("service_staff")) ? <Tile href="/cashier" label={s.home.cashier} icon="cash" tone="lime" /> : null}
+          {profile.is_barber ? <>
+            <Tile href="/day" label={s.home.myDay} icon="calendar" tone="cool" />
+            <Tile href="/clients" label={s.home.clientBook} icon="book" tone="violet" />
+          </> : null}
+          {profile.is_barber || has("service_staff") || has("barber") ? <Tile href="/earnings" label={s.home.earnings} icon="wallet" tone="gold" /> : null}
+          {profile.is_barber ? <>
+            <Tile href="/photos" label={s.home.myCuts} icon="image" tone="hot" />
+            <Tile href="/share" label={s.home.bookingLink} icon="link" tone="teal" />
+            <Tile href="/availability" label={s.home.availability} icon="clock" tone="cool" />
+          </> : null}
+          {current && (has("cashier") || has("manager")) ? <>
+            <Tile href="/shop/payout" label={s.home.payout} icon="list" tone="lime" />
+            <Tile href="/shop/summary" label={s.home.summary} icon="chart" tone="gold" />
+          </> : null}
+          {current && has("manager") ? <>
+            <Tile href="/shop/manage" label={s.home.manage} icon="users" tone="violet" />
+            <Tile href="/shop/flags" label={s.home.flags} icon="flag" tone="hot" />
+            <Tile href="/shop/usage" label={s.home.usage} icon="chart" tone="cool" />
+            <Tile href="/shop/problems" label={s.home.problems} icon="alert" tone="gold" />
+            <Tile href="/shop/audit" label={s.home.audit} icon="shield" tone="teal" />
+          </> : null}
+          {profile.is_platform_admin ? <Tile href="/admin" label={s.home.admin} icon="shield" tone="violet" /> : null}
+          <Tile href="/guide" label={s.home.guide} icon="help" tone="teal" />
         </div>
-        <Link href="/account" className="min-h-12 rounded-xl border-2 border-line px-3 py-2.5 font-semibold">{s.home.account}</Link>
-      </header>
 
-      {profile.subscription === "due" ? (
-        <div className="mb-4"><Notice tone="warn">
-          <b>{s.home.payDue}</b><br />{s.app.kes} {profile.monthly_price_kes} {s.home.perMonth}. {profile.payment_instructions}
-        </Notice></div>
-      ) : profile.subscription === "trial" ? (
-        <p className="mb-4 text-sm text-muted">{s.home.trialEnds}: {dayLabel(profile.trial_ends_at)}</p>
-      ) : null}
-
-      {current ? (
-        <section className="mb-4 rounded-2xl bg-ink p-4 text-white">
-          <div className="text-xl font-bold">{current.name}</div>
-          <div className="text-sm opacity-80">{current.area} · {current.roles.map((r) => s.shop.role[r]).join(", ")}</div>
-          {usableShops.length > 1 ? (
-            <form action={switchShop} className="mt-3 flex gap-2">
-              <select name="shop_id" defaultValue={current.shop_id} className="min-h-12 flex-1 rounded-xl px-2 text-ink">
-                {usableShops.map((m) => <option key={m.shop_id} value={m.shop_id}>{m.name}</option>)}
-              </select>
-              <button className="min-h-12 rounded-xl bg-white px-3 font-semibold text-ink">{s.home.switchShop}</button>
-            </form>
-          ) : null}
-        </section>
-      ) : (
-        <section className="mb-4 space-y-3">
-          <Notice>{s.home.noShop} {profile.is_barber ? s.home.noShopBarber : null}</Notice>
-        </section>
-      )}
-
-      {pending.map((m) => (
-        <div key={m.membership_id} className="mb-3"><Notice tone="warn"><b>{m.name}</b>: {s.home.pending}</Notice></div>
-      ))}
-
-      <div className="grid grid-cols-2 gap-3">
-        {current && has("barber") ? <Tile href="/code/new" label={s.home.newCode} primary /> : null}
-        {current && has("service_staff") ? <Tile href="/queue" label={s.home.queue} primary={!has("barber")} /> : null}
-        {current && has("cashier") ? <Tile href="/cashier" label={s.home.cashier} primary={!has("barber") && !has("service_staff")} /> : null}
-        {profile.is_barber ? <>
-          <Tile href="/day" label={s.home.myDay} />
-          <Tile href="/clients" label={s.home.clientBook} />
-        </> : null}
-        {profile.is_barber || has("service_staff") || has("barber") ? <Tile href="/earnings" label={s.home.earnings} /> : null}
-        {profile.is_barber ? <>
-          <Tile href="/share" label={s.home.bookingLink} />
-          <Tile href="/availability" label={s.home.availability} />
-        </> : null}
-        {current && (has("cashier") || has("manager")) ? <>
-          <Tile href="/shop/payout" label={s.home.payout} />
-          <Tile href="/shop/summary" label={s.home.summary} />
-        </> : null}
-        {current && has("manager") ? <>
-          <Tile href="/shop/manage" label={s.home.manage} />
-          <Tile href="/shop/flags" label={s.home.flags} />
-          <Tile href="/shop/usage" label={s.home.usage} />
-          <Tile href="/shop/problems" label={s.home.problems} />
-          <Tile href="/shop/audit" label={s.home.audit} />
-        </> : null}
-        {profile.is_platform_admin ? <Tile href="/admin" label={s.home.admin} /> : null}
-        <Tile href="/guide" label={s.home.guide} />
-      </div>
-
-      <div className={`mt-6 grid grid-cols-2 gap-3 ${current ? "text-sm" : ""}`}>
-        <LinkButton href="/shop/new" variant={current ? "ghost" : "secondary"}>{s.home.createShop}</LinkButton>
-        <LinkButton href="/shop/join" variant={current ? "ghost" : "secondary"}>{s.home.joinShop}</LinkButton>
+        <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
+          <Link href="/shop/new" className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-line text-muted"><Icon name="plus" size={18} />{s.home.createShop}</Link>
+          <Link href="/shop/join" className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-line text-muted"><Icon name="users" size={18} />{s.home.joinShop}</Link>
+        </div>
       </div>
     </main>
   );

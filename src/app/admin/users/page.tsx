@@ -12,7 +12,7 @@ export default async function AdminUsers({ searchParams }: PageProps<"/admin/use
     <Page title={s.admin.users}>
       <AdminNav at="/admin/users" />
       <form className="mb-4"><input name="q" defaultValue={typeof q === "string" ? q : ""} placeholder={s.app.search}
-        className="block min-h-12 w-full rounded-xl border-2 border-line bg-white px-3 text-lg" /></form>
+        className="block min-h-12 w-full rounded-xl border border-line bg-surface px-3 text-lg" /></form>
       <UserList users={(data ?? []) as AdminUser[]} me={profile.id} />
     </Page>
   );

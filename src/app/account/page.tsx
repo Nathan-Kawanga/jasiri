@@ -28,7 +28,7 @@ export default async function Account() {
           ))}
         </section>
         <PinForm />
-        <form action={signOut}><button className="min-h-12 w-full rounded-xl border-2 border-line font-semibold">{s.app.signOut}</button></form>
+        <form action={signOut}><button className="min-h-12 w-full rounded-xl border border-line font-semibold">{s.app.signOut}</button></form>
       </div>
     </Page>
   );

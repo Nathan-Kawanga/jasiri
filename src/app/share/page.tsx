@@ -22,7 +22,7 @@ export default async function SharePage() {
         </Card>
         <Card className="no-print space-y-3">
           <div className="font-bold">{s.booking.quickReply}</div>
-          <p className="rounded-xl bg-paper p-3">{reply}</p>
+          <p className="rounded-2xl bg-surface-2 p-3">{reply}</p>
           <CopyButton text={reply} />
           <Notice>{s.booking.quickReplyHint}</Notice>
         </Card>
@@ -30,7 +30,7 @@ export default async function SharePage() {
           <div className="no-print font-bold">{s.booking.qr}</div>
           <div className="text-3xl font-black">{profile.full_name}</div>
           <div className="text-xl">{s.booking.scanToBook}</div>
-          <div className="mx-auto w-full max-w-xs" dangerouslySetInnerHTML={{ __html: svg }} />
+          <div className="mx-auto w-full max-w-xs rounded-2xl bg-white p-3" dangerouslySetInnerHTML={{ __html: svg }} />
           <div className="break-all font-semibold">{link}</div>
           <PrintButton label={s.booking.printQr} />
         </Card>

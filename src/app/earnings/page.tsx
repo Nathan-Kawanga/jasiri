@@ -40,7 +40,7 @@ export default async function EarningsPage({ searchParams }: PageProps<"/earning
       <div className="space-y-5">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
           {Object.entries(all).map(([k, v]) => (
-            <Link key={k} href={`/earnings?p=${k}`} className={`min-h-12 shrink-0 rounded-full px-4 py-3 text-sm font-semibold ${k === key ? "bg-brand text-white" : "border-2 border-line bg-white"}`}>{v.label}</Link>
+            <Link key={k} href={`/earnings?p=${k}`} className={`min-h-12 shrink-0 rounded-full px-4 py-3 text-sm font-semibold ${k === key ? "gold-grad text-black" : "border border-line bg-surface"}`}>{v.label}</Link>
           ))}
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -51,16 +51,16 @@ export default async function EarningsPage({ searchParams }: PageProps<"/earning
         <Card className="space-y-2">
           <div className="font-bold">{s.earnings.export}</div>
           <div className="grid grid-cols-3 gap-2">
-            <a href={exp("xlsx")} className="min-h-12 rounded-xl border-2 border-brand py-3 text-center font-semibold text-brand">{s.app.downloadExcel}</a>
-            <a href={exp("pdf")} className="min-h-12 rounded-xl border-2 border-brand py-3 text-center font-semibold text-brand">{s.app.downloadPdf}</a>
-            <a href={exp("csv")} className="min-h-12 rounded-xl border-2 border-brand py-3 text-center font-semibold text-brand">{s.app.downloadCsv}</a>
+            <a href={exp("xlsx")} className="min-h-12 rounded-xl border border-brand py-3 text-center font-semibold text-brand">{s.app.downloadExcel}</a>
+            <a href={exp("pdf")} className="min-h-12 rounded-xl border border-brand py-3 text-center font-semibold text-brand">{s.app.downloadPdf}</a>
+            <a href={exp("csv")} className="min-h-12 rounded-xl border border-brand py-3 text-center font-semibold text-brand">{s.app.downloadCsv}</a>
           </div>
         </Card>
         <section className="space-y-2">
           <h2 className="text-lg font-bold">{s.earnings.myCodes}</h2>
           {e.rows.length === 0 ? <Empty>{s.app.none}</Empty> : null}
           {e.rows.map((r) => (
-            <div key={`${r.code_id}${r.role}`} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-white px-3 py-2">
+            <div key={`${r.code_id}${r.role}`} className="flex items-center justify-between gap-2 rounded-xl border border-line bg-surface px-3 py-2">
               <div>
                 <div><b className="font-mono">{r.display_code}</b> · {r.client_first_name ?? "—"} · {r.role === "barber" ? s.earnings.asBarber : s.earnings.asService}</div>
                 <div className="text-sm text-muted">{key === "today" ? time(r.created_at) : `${dayLabel(r.created_at)} ${time(r.created_at)}`}{usableShops.length > 1 ? ` · ${r.shop_name}` : ""}</div>

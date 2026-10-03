@@ -20,7 +20,7 @@ export default async function AdminShops() {
             <div className="flex items-center gap-2"><b className="text-lg">{x.name}</b>{x.suspended ? <Badge tone="red">{s.admin.suspend}</Badge> : null}</div>
             <div className="text-sm text-muted">{x.area} · {dayLabel(x.created_at)} · {x.members} {s.shop.members.toLowerCase()} · {x.codes_7d} codes (7d)</div>
             <div className="grid grid-cols-2 gap-2">
-              <Link href={`/admin/shops/${x.id}`} className="min-h-12 rounded-xl border-2 border-brand py-3 text-center font-semibold text-brand">{s.manager.auditTitle}</Link>
+              <Link href={`/admin/shops/${x.id}`} className="min-h-12 rounded-xl border border-brand py-3 text-center font-semibold text-brand">{s.manager.auditTitle}</Link>
               <SuspendShop id={x.id} suspended={x.suspended} />
             </div>
           </Card>

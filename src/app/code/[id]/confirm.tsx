@@ -20,10 +20,11 @@ export function CodeConfirm({ code }: { code: CodeView }) {
   const serviceOnly = !code.barber_id;
 
   const big = (
-    <div className="my-6 text-center">
-      <div className="font-mono text-7xl font-black tracking-[0.2em] text-ink" aria-label={code.display_code.split("").join(" ")}>{code.display_code}</div>
-      {code.client_first_name ? <div className="mt-2 text-xl font-semibold">{code.client_first_name}</div> : null}
-      {!serviceOnly ? <div className="text-xl text-muted">{kes(code.barber_amount)}</div> : null}
+    <div className="relative my-6 overflow-hidden rounded-3xl border border-line bg-surface px-4 py-8 text-center">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(255,178,30,0.18),transparent)]" />
+      <div data-testid="code" className="glow relative font-mono text-7xl font-black tracking-[0.2em] text-brand" aria-label={code.display_code.split("").join(" ")}>{code.display_code}</div>
+      {code.client_first_name ? <div className="relative mt-3 text-xl font-semibold">{code.client_first_name}</div> : null}
+      {!serviceOnly ? <div className="relative text-xl text-muted">{kes(code.barber_amount)}</div> : null}
     </div>
   );
 
@@ -35,7 +36,7 @@ export function CodeConfirm({ code }: { code: CodeView }) {
         <ErrorNote code={error} />
         <button disabled={pending}
           onClick={async () => { const r = await run<Result>("confirm_code", { p_code: code.id }); if (r) setState(r); }}
-          className="mt-4 min-h-24 w-full rounded-2xl bg-brand text-2xl font-black text-white active:scale-[0.98] disabled:opacity-60">
+          className="pulse-ring shine mt-4 min-h-24 w-full rounded-3xl gold-grad font-display text-3xl font-extrabold text-black active:scale-[0.98] disabled:opacity-60">
           {s.code.confirmMyCode}
         </button>
         <p className="mt-2 text-center text-sm text-muted">{s.code.clientTaps}</p>
@@ -54,9 +55,9 @@ export function CodeConfirm({ code }: { code: CodeView }) {
         serviceOnly ? (
           <Notice tone="ok">{s.code.cashierCanSee}</Notice>
         ) : state.assigned_staff_name ? (
-          <div className="rounded-2xl bg-brand p-5 text-center text-white">
+          <div className="shine rounded-3xl gold-grad p-6 text-center text-black">
             <div className="text-lg">{s.code.sendTo}</div>
-            <div className="text-4xl font-black">{state.assigned_staff_name}</div>
+            <div data-testid="sent-to" className="font-display text-4xl font-extrabold">{state.assigned_staff_name}</div>
           </div>
         ) : (
           <Notice tone="warn">{s.code.unassigned}</Notice>

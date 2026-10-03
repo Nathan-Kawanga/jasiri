@@ -22,7 +22,7 @@ export default async function ProblemsPage() {
             </div>
             <div className="text-sm text-muted">{dateTime(r.created_at)}</div>
             <p className="whitespace-pre-line">{r.note}</p>
-            {r.resolution_note ? <p className="rounded-xl bg-paper p-2 text-sm">{r.resolution_note}</p> : null}
+            {r.resolution_note ? <p className="rounded-xl bg-surface-2 p-2 text-sm">{r.resolution_note}</p> : null}
             {r.status === "open" ? <Resolve id={r.id} /> : null}
           </Card>
         ))}

@@ -34,6 +34,11 @@ export const s = {
   },
 
   auth: {
+    heroTitle: "Every cut. On record.",
+    heroSub: "Your codes, your clients, your booking link. In your pocket.",
+    pill1: "No more lost counts",
+    pill2: "Your own client book",
+    pill3: "Clients book you direct",
     signInTitle: "Sign in",
     signUpTitle: "Create your account",
     phoneOrEmail: "Phone number or email",
@@ -88,6 +93,13 @@ export const s = {
     account: "My account",
     admin: "Platform admin",
     guide: "How to use",
+    myCuts: "My cuts",
+    newCodeHint: "Tap after every cut",
+    queueHint: "Clients sent to you",
+    cashierHint: "Take payment",
+    goodMorning: "Good morning",
+    goodAfternoon: "Good afternoon",
+    goodEvening: "Good evening",
     trialEnds: "Free month ends",
     payDue: "Your free month is over. Please pay to keep using Jasiri.",
     payInstructions: "How to pay",
@@ -327,6 +339,21 @@ export const s = {
     notFound: "This booking link does not exist.",
   },
 
+  photos: {
+    title: "My cuts",
+    hint: "Show off your best work. These photos appear on your booking link.",
+    profile: "Profile photo",
+    changePhoto: "Change photo",
+    addPhoto: "Add photo",
+    addCuts: "Add cuts",
+    styleName: "Style name (optional, e.g. Taper fade)",
+    uploading: "Uploading…",
+    remove: "Remove",
+    count: (n: number) => `${n} of 12 photos`,
+    empty: "No photos yet. Add your best cuts so clients choose you.",
+    myWork: "My work",
+  },
+
   manager: {
     summaryTitle: "Daily summary",
     created: "Codes created",
@@ -446,6 +473,8 @@ export const s = {
     not_open: "Already handled.",
     not_pending: "Already handled.",
     not_active: "This membership has ended.",
+    too_many_photos: "You can have up to 12 photos. Remove one first.",
+    upload_failed: "Upload failed. Check your connection and try again.",
   } as Record<string, string | ((n: number) => string)>,
 };
 

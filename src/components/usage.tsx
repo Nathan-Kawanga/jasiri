@@ -24,7 +24,7 @@ export function BookingTable({ rows }: { rows: BookingMetric[] }) {
       {rows.map((b) => (
         <div key={b.name} className="flex justify-between text-sm">
           <span>{b.name}</span>
-          <span className={(b.link_pct ?? 0) < 30 ? "font-semibold text-amber-800" : ""}>{b.link}/{b.link + b.manual} ({b.link_pct ?? 0}%) · {b.no_show_pct ?? 0}%</span>
+          <span className={(b.link_pct ?? 0) < 30 ? "font-semibold text-amber-300" : ""}>{b.link}/{b.link + b.manual} ({b.link_pct ?? 0}%) · {b.no_show_pct ?? 0}%</span>
         </div>
       ))}
     </Card>

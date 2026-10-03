@@ -14,9 +14,9 @@ export default async function DayPage({ searchParams }: PageProps<"/day">) {
   return (
     <Page title={s.booking.dayTitle}>
       <div className="mb-4 flex items-center justify-between gap-2">
-        <Link href={`/day?d=${addDays(day, -1)}`} className="min-h-12 min-w-12 rounded-xl border-2 border-line px-3 py-2.5 text-center font-bold">‹</Link>
+        <Link href={`/day?d=${addDays(day, -1)}`} className="min-h-12 min-w-12 rounded-xl border border-line px-3 py-2.5 text-center font-bold">‹</Link>
         <div className="text-center text-lg font-bold">{day === nairobiToday() ? s.app.today : dayLabel(day + "T12:00:00+03:00")}</div>
-        <Link href={`/day?d=${addDays(day, 1)}`} className="min-h-12 min-w-12 rounded-xl border-2 border-line px-3 py-2.5 text-center font-bold">›</Link>
+        <Link href={`/day?d=${addDays(day, 1)}`} className="min-h-12 min-w-12 rounded-xl border border-line px-3 py-2.5 text-center font-bold">›</Link>
       </div>
       <DayView day={day} data={data as DayData} canCode={canCode} barberName={profile.full_name.split(" ")[0]} />
     </Page>

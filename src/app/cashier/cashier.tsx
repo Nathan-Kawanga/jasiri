@@ -6,6 +6,7 @@ import { useAct } from "@/lib/use-act";
 import { useLive } from "@/lib/use-live";
 import { Badge, Button, Card, Field, Input, Notice, Empty, inputClass } from "@/components/ui";
 import { ErrorNote } from "@/components/error-note";
+import { Icon } from "@/components/icons";
 
 export type CCode = {
   id: string; display_code: string; status: "open" | "paid" | "voided"; service_status: string;
@@ -36,9 +37,9 @@ export function Cashier({ shopId, initial }: { shopId: string; initial: CCode[] 
         <h2 className="text-lg font-bold">{s.cashier.ready} ({open.length})</h2>
         {open.length === 0 ? <Empty>{s.app.none}</Empty> : null}
         {open.map((c) => (
-          <button key={c.id} onClick={() => setOpenId(c.id)} className="block w-full rounded-2xl border-2 border-line bg-white p-4 text-left active:scale-[0.99]">
+          <button key={c.id} onClick={() => setOpenId(c.id)} className="block w-full rounded-3xl border border-line bg-surface p-4 text-left active:scale-[0.99] hover:border-brand/50">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-3xl font-black tracking-widest">{c.display_code}</span>
+              <span className="font-mono text-3xl font-black tracking-widest text-brand">{c.display_code}</span>
               <span className="text-2xl font-bold tabular-nums">{kes(c.expected_total)}</span>
             </div>
             <div className="mt-1 text-lg font-semibold">{c.client_first_name ?? s.code.noDetails}</div>
@@ -54,7 +55,7 @@ export function Cashier({ shopId, initial }: { shopId: string; initial: CCode[] 
       <section className="space-y-2">
         <h2 className="text-lg font-bold">{s.cashier.paidToday} ({paid.length})</h2>
         {paid.map((c) => (
-          <div key={c.id} className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
+          <div key={c.id} className="flex items-center justify-between rounded-xl bg-surface px-3 py-2">
             <span><b className="font-mono">{c.display_code}</b> · {c.client_first_name ?? "—"} · {time(c.paid_at!)}</span>
             <span className="tabular-nums">{kes(c.amount_paid)}{c.amount_paid !== c.expected_total ? " ⚠" : ""}</span>
           </div>
@@ -64,7 +65,7 @@ export function Cashier({ shopId, initial }: { shopId: string; initial: CCode[] 
         <section className="space-y-2">
           <h2 className="text-lg font-bold">{s.cashier.voidedToday} ({voided.length})</h2>
           {voided.map((c) => (
-            <div key={c.id} className="rounded-xl bg-white px-3 py-2 text-muted">
+            <div key={c.id} className="rounded-xl bg-surface px-3 py-2 text-muted">
               <b className="font-mono">{c.display_code}</b> · {s.cashier.reasons[c.void_reason ?? "other"]}
             </div>
           ))}
@@ -87,7 +88,7 @@ function PayPanel({ code, onClose }: { code: CCode; onClose: () => void }) {
   if (done !== null) {
     return (
       <div className="space-y-4 text-center">
-        <div className="text-6xl">✓</div>
+        <div className="mx-auto inline-flex size-20 items-center justify-center rounded-full gold-grad text-black shine"><Icon name="check" size={40} /></div>
         <div className="text-2xl font-black">{s.cashier.paid}: {kes(done)}</div>
         <div className="font-mono text-3xl">{code.display_code}</div>
         <Button className="min-h-16 w-full text-xl" onClick={onClose}>{s.app.done}</Button>
@@ -99,7 +100,7 @@ function PayPanel({ code, onClose }: { code: CCode; onClose: () => void }) {
     <div className="space-y-4">
       <button onClick={onClose} className="min-h-12 font-semibold text-brand">← {s.cashier.title}</button>
       <div className="text-center">
-        <div className="font-mono text-6xl font-black tracking-[0.2em]">{code.display_code}</div>
+        <div className="glow font-mono text-6xl font-black tracking-[0.2em] text-brand">{code.display_code}</div>
         <div className="text-xl font-semibold">{code.client_first_name ?? "—"}</div>
       </div>
       <Card className="space-y-1 text-lg">
@@ -119,7 +120,7 @@ function PayPanel({ code, onClose }: { code: CCode; onClose: () => void }) {
           {n !== null && n !== code.expected_total ? <Notice tone="warn">{s.cashier.mismatch}</Notice> : null}
           <button disabled={pending || n === null}
             onClick={async () => { if (await run("pay_code", { p_code: code.id, p_amount_paid: n })) setDone(n); }}
-            className="min-h-24 w-full rounded-2xl bg-brand px-3 text-xl font-black text-white active:scale-[0.98] disabled:opacity-40">
+            className="shine min-h-24 w-full rounded-3xl gold-grad font-display px-3 text-xl font-black text-black active:scale-[0.98] disabled:opacity-40">
             {n === null ? s.cashier.amountPaid : s.cashier.clientTapPaid(kes(n))}
           </button>
           <Button variant="danger" className="w-full" onClick={() => setVoiding(true)}>{s.cashier.void}</Button>

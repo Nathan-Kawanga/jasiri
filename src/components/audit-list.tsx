@@ -27,7 +27,7 @@ export function AuditList({ rows, names, moreHref }: { rows: AuditRow[]; names: 
   return (
     <div className="space-y-2">
       {rows.map((r) => (
-        <div key={r.id} className="rounded-xl border border-line bg-white p-2 text-sm">
+        <div key={r.id} className="rounded-xl border border-line bg-surface p-2 text-sm">
           <div className="flex justify-between gap-2"><b>{r.action}</b><span className="text-muted">{dateTime(r.at)}</span></div>
           <div className="text-muted">{r.actor_id ? names[r.actor_id] ?? r.actor_id.slice(0, 8) : "system"}{r.actor_roles.length ? ` (${r.actor_roles.join(", ")})` : ""}</div>
           <div className="break-words font-mono text-xs">{changes(r)}</div>

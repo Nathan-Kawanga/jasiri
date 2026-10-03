@@ -46,7 +46,7 @@ export function Availability({ rules: initial, blocks, slotMinutes }: { rules: R
               <Input type="time" step={900} value={r.start_time} onChange={(e) => setRule(i, { start_time: e.target.value })} aria-label={s.booking.from} />
               <span>–</span>
               <Input type="time" step={900} value={r.end_time} onChange={(e) => setRule(i, { end_time: e.target.value })} aria-label={s.booking.to} />
-              <button className="min-h-12 min-w-12 text-2xl text-red-700" onClick={() => setRules(rules.filter((_, j) => j !== i))} aria-label={s.queue.remove}>×</button>
+              <button className="min-h-12 min-w-12 text-2xl text-red-400" onClick={() => setRules(rules.filter((_, j) => j !== i))} aria-label={s.queue.remove}>×</button>
             </div>
           ))}
         </Card>

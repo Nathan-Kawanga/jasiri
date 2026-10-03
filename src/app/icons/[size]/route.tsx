@@ -9,7 +9,7 @@ export async function GET(_: Request, ctx: RouteContext<"/icons/[size]">) {
   const n = Number((await ctx.params).size) || 192;
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#0f5132", color: "white", fontSize: n * 0.62, fontWeight: 900 }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #ffd166, #ffb21e 50%, #ff7a45)", color: "#09090c", fontSize: n * 0.62, fontWeight: 900 }}>
         J
       </div>
     ),

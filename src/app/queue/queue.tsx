@@ -46,9 +46,9 @@ export function Queue({ shopId, initial }: { shopId: string; initial: QueueData 
         <h2 className="text-lg font-bold">{s.queue.mine} ({mine.length})</h2>
         {mine.length === 0 ? <Empty>{s.queue.empty}</Empty> : null}
         {mine.map((c) => (
-          <button key={c.id} onClick={() => setOpenId(c.id)} className="block w-full rounded-2xl border-2 border-brand bg-white p-4 text-left active:scale-[0.99]">
+          <button key={c.id} onClick={() => setOpenId(c.id)} className="block w-full rounded-3xl border border-brand/50 bg-gradient-to-br from-brand/10 to-surface p-4 text-left active:scale-[0.99]">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-3xl font-black tracking-widest">{c.display_code}</span>
+              <span className="font-mono text-3xl font-black tracking-widest text-brand">{c.display_code}</span>
               <Badge tone={c.service_status === "in_progress" ? "green" : "amber"}>{s.code.service[c.service_status]}</Badge>
             </div>
             <div className="mt-1 text-lg font-semibold">{c.client_first_name ?? "—"}</div>
@@ -62,7 +62,7 @@ export function Queue({ shopId, initial }: { shopId: string; initial: QueueData 
         {unassigned.map((c) => (
           <Card key={c.id} className="flex items-center justify-between gap-2">
             <div>
-              <div className="font-mono text-2xl font-black tracking-widest">{c.display_code}</div>
+              <div className="font-mono text-2xl font-black tracking-widest text-brand">{c.display_code}</div>
               <div className="text-sm text-muted">{c.client_first_name ?? "—"} · {c.barber_name ?? s.code.noBarber} · {time(c.confirmed_at)}</div>
             </div>
             <Button disabled={pending} onClick={async () => { if (await run("take_code", { p_code: c.id })) { await reload(); setOpenId(c.id); } }}>{s.queue.take}</Button>
@@ -111,7 +111,7 @@ function CodeWork({ code, data, onClose, reload }: { code: QCode; data: QueueDat
     <div className="space-y-4">
       <button onClick={onClose} className="min-h-12 font-semibold text-brand">← {s.queue.title}</button>
       <div className="text-center">
-        <div className="font-mono text-6xl font-black tracking-[0.2em]">{code.display_code}</div>
+        <div className="glow font-mono text-6xl font-black tracking-[0.2em] text-brand">{code.display_code}</div>
         <div className="text-xl font-semibold">{code.client_first_name ?? "—"}</div>
         <div className="text-muted">{code.barber_name ?? s.code.noBarber}</div>
       </div>
@@ -120,7 +120,7 @@ function CodeWork({ code, data, onClose, reload }: { code: QCode; data: QueueDat
       {code.service_status === "pending" ? (
         <div>
           <button disabled={pending} onClick={() => go("service_start", { p_code: code.id })}
-            className="min-h-24 w-full rounded-2xl bg-brand text-2xl font-black text-white active:scale-[0.98] disabled:opacity-60">
+            className="shine min-h-24 w-full rounded-3xl gold-grad font-display text-2xl font-black text-black active:scale-[0.98] disabled:opacity-60">
             {s.queue.clientConfirm}
           </button>
           <p className="mt-2 text-center text-sm text-muted">{s.queue.clientConfirmHint}</p>
@@ -145,7 +145,7 @@ function CodeWork({ code, data, onClose, reload }: { code: QCode; data: QueueDat
             <div className="flex flex-wrap gap-2">
               {data.recent_amounts.map((a) => (
                 <button type="button" key={a} onClick={() => setAmount(String(a))}
-                  className={`min-h-12 rounded-xl border-2 px-3 font-semibold ${amount === String(a) ? "border-brand bg-brand-soft" : "border-line bg-white"}`}>{a}</button>
+                  className={`min-h-12 rounded-xl border px-3 font-semibold ${amount === String(a) ? "border-brand bg-brand-soft" : "border-line bg-surface"}`}>{a}</button>
               ))}
             </div>
           ) : null}

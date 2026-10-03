@@ -40,7 +40,7 @@ export function SignupForm({ siteUrl, next }: { siteUrl: string; next: string })
         <Input name="pin2" type="password" inputMode="numeric" pattern="\d{6}" maxLength={6} autoComplete="new-password" required />
       </Field>
       {mode === "phone" ? (
-        <label className="flex min-h-12 items-start gap-3 rounded-xl border-2 border-line bg-white p-3">
+        <label className="flex min-h-12 items-start gap-3 rounded-2xl border border-line bg-surface-2 p-3">
           <input type="checkbox" name="is_barber" className="mt-1 size-6 accent-brand"
                  checked={barber} onChange={(e) => setBarber(e.target.checked)} />
           <span><span className="block font-semibold">{s.auth.iAmBarber}</span>

@@ -9,6 +9,7 @@ import { checkPhone, book, type Booked } from "../actions";
 export type PublicBarber = {
   name: string; handle: string; about: string | null; slot_minutes: number;
   shop: { name: string; area: string } | null; slots: string[];
+  photo_path: string | null; photos: { path: string; caption: string | null }[];
 };
 
 export function BookingFlow({ barber }: { barber: PublicBarber }) {
@@ -37,12 +38,12 @@ export function BookingFlow({ barber }: { barber: PublicBarber }) {
     const cancelUrl = `/b/c/${done.cancel_token}`;
     return (
       <Card className="space-y-3 text-center">
-        <div className="text-5xl">✓</div>
+        <div className="mx-auto inline-flex size-20 items-center justify-center rounded-full gold-grad text-4xl font-black text-black shine">✓</div>
         <div className="text-2xl font-black">{s.booking.booked}</div>
         <div className="text-xl">{dayLabel(done.slot_start)} · <b>{time(done.slot_start)}</b></div>
         <div className="text-muted tabular-nums">{done.masked_phone}</div>
         <Notice>{s.booking.keepLink}</Notice>
-        <a href={cancelUrl} className="block min-h-12 py-3 font-semibold text-red-700">{s.booking.cancelLink}</a>
+        <a href={cancelUrl} className="block min-h-12 py-3 font-semibold text-red-400">{s.booking.cancelLink}</a>
       </Card>
     );
   }
@@ -83,7 +84,7 @@ export function BookingFlow({ barber }: { barber: PublicBarber }) {
             <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
               {byDay.map(([d, times], i) => (
                 <button key={d} onClick={() => setDayIdx(i)}
-                  className={`min-h-12 shrink-0 rounded-full px-4 text-sm font-semibold ${i === Math.min(dayIdx, byDay.length - 1) ? "bg-brand text-white" : "border-2 border-line bg-white"}`}>
+                  className={`min-h-12 shrink-0 rounded-full px-4 text-sm font-semibold ${i === Math.min(dayIdx, byDay.length - 1) ? "gold-grad text-black" : "border border-line bg-surface-2"}`}>
                   {dayLabel(times[0])}
                 </button>
               ))}
@@ -92,7 +93,7 @@ export function BookingFlow({ barber }: { barber: PublicBarber }) {
           {byDay.length ? (
             <div className="grid grid-cols-4 gap-2">
               {byDay[Math.min(dayIdx, byDay.length - 1)][1].map((t) => (
-                <button key={t} onClick={() => setSlot(t)} className="min-h-12 rounded-xl border-2 border-brand bg-white font-bold text-brand tabular-nums active:bg-brand active:text-white">{time(t)}</button>
+                <button key={t} onClick={() => setSlot(t)} className="min-h-12 rounded-2xl border border-brand/40 bg-brand/10 font-bold text-amber-200 tabular-nums active:scale-95">{time(t)}</button>
               ))}
             </div>
           ) : null}
