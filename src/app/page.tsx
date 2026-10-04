@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getContext } from "@/lib/context";
 import { serviceClient } from "@/lib/supabase/server";
 import { Landing } from "./landing";
+import { JoinRequests, type JoinRequest } from "@/components/join-requests";
 import { s } from "@/lib/strings";
 import { dayLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/photos";
@@ -49,7 +50,10 @@ export default async function Home() {
     return <Landing price={data?.value ?? "200"} />;
   }
   if (ctx.profile.suspended) redirect("/suspended");
-  const { profile, shops, usableShops, current, roles } = ctx;
+  const { profile, shops, usableShops, current, roles, supabase } = ctx;
+  const { data: requests } = current
+    ? await supabase.rpc("shop_join_requests", { p_shop: current.shop_id })
+    : { data: [] };
   const has = (r: string) => roles.includes(r as never);
   const pending = shops.filter((m) => m.status === "pending");
   const first = profile.full_name.split(" ")[0];
@@ -109,6 +113,8 @@ export default async function Home() {
           <div className="mb-4"><Notice>{s.home.noShop} {profile.is_barber ? s.home.noShopBarber : null}</Notice></div>
         )}
 
+        <JoinRequests initial={(requests ?? []) as JoinRequest[]} />
+
         {pending.map((m) => (
           <div key={m.membership_id} className="mb-3"><Notice tone="warn"><b>{m.name}</b>: {s.home.pending}</Notice></div>
         ))}
@@ -144,10 +150,9 @@ export default async function Home() {
           <Tile href="/guide" label={s.home.guide} icon="help" />
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-          <Link href="/shop/new" className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-line text-muted"><Icon name="plus" size={18} />{s.home.createShop}</Link>
-          <Link href="/shop/join" className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-line text-muted"><Icon name="users" size={18} />{s.home.joinShop}</Link>
-        </div>
+        <Link href="/shop/find" className={`mt-6 flex min-h-12 items-center justify-center gap-2 rounded-2xl ${current ? "border border-dashed border-line text-sm text-muted" : "gold-grad font-semibold text-black"}`}>
+          <Icon name="store" size={18} />{s.shop.findOrAdd}
+        </Link>
       </div>
     </main>
   );

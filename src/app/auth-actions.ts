@@ -102,9 +102,9 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   const { error: signInError } = await supabase.auth.signInWithPassword({ email: loginEmail, password: pin });
   if (signInError) return { error: "generic" };
   const next = nextPath(form);
-  // Send each person to their first step: managers set up a shop, staff join one.
+  // Everyone's first step: find their shop (or add it if no coworker has yet).
   if (next !== "/") redirect(next);
-  redirect(role === "manager" ? "/shop/new?welcome=1" : role === "barber" ? "/" : "/shop/join?welcome=1");
+  redirect("/shop/find?welcome=1");
 }
 
 export async function signOut() {

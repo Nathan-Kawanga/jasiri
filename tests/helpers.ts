@@ -19,14 +19,14 @@ export function randomPhone() {
   return `+2547${tail}`;
 }
 
-export async function newUser(opts: { barber?: boolean; name?: string; email?: string } = {}): Promise<User> {
+export async function newUser(opts: { barber?: boolean; name?: string; email?: string; role?: string } = {}): Promise<User> {
   const phone = randomPhone();
   const handle = opts.barber ? `t${phone.slice(-8)}${n}` : null;
   const name = opts.name ?? `Test ${n}`;
   const loginEmail = opts.email ?? `${phone.slice(1)}@phone.jasiri.app`;
   const { data, error } = await service.auth.admin.createUser({
     email: loginEmail, password: "123456", email_confirm: true,
-    user_metadata: { full_name: name, phone: opts.email ? null : phone, contact_email: opts.email ?? null, is_barber: !!opts.barber, handle },
+    user_metadata: { full_name: name, phone: opts.email ? null : phone, contact_email: opts.email ?? null, is_barber: !!opts.barber, handle, signup_role: opts.role ?? (opts.barber ? "barber" : null) },
   });
   if (error) throw error;
   const client = anon();

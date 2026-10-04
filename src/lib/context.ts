@@ -15,6 +15,7 @@ export type Profile = {
   handle: string | null;
   about: string | null;
   photo_path: string | null;
+  signup_role?: string | null;
   slot_minutes: number;
   is_platform_admin: boolean;
   suspended: boolean;

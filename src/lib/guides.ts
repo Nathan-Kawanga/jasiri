@@ -10,7 +10,8 @@ export const guides: Record<string, Guide> = {
       { h: "2. Type what you charged", p: "Type the amount in KES, then Make code." },
       { h: "3. The client taps Confirm my code", p: "Show him the screen. His tap opens the code. The app tells you which service lady to send him to. The cashier can see the code at the same moment." },
       { h: "4. Check your earnings", p: "My earnings shows Cashier-confirmed codes (the client paid) and Self-recorded ones (not paid yet). Download Excel or PDF to hand to your boss." },
-      { h: "5. Your client book and booking link", p: "Clients who give their number go into your client book. It is yours: if you move shops it moves with you. Set Bookable times, then share your link from Booking link (copy, WhatsApp reply, QR code for your mirror)." },
+      { h: "5. Bring your shop on", p: "If your shop isn't on Jasiri yet, add it in Find your shop. You become its manager. Coworkers find it by name and you, or anyone in the shop, tap Yes to let them in. Hand the manager role to the owner when he joins." },
+      { h: "6. Your client book and booking link", p: "Clients who give their number go into your client book. It is yours: if you move shops it moves with you. Set Bookable times, then share your link from Booking link (copy, WhatsApp reply, QR code for your mirror)." },
     ],
     rules: [
       "No code, no record. Make a code for every client.",
@@ -54,7 +55,7 @@ export const guides: Record<string, Guide> = {
     title: "Shop manager",
     who: "You set up the shop and let people in. You can also be a barber, service staff or cashier.",
     steps: [
-      { h: "1. Invite people", p: "Manage shop shows the join code and invite link. People who ask to join get nothing until you approve them and pick their roles." },
+      { h: "1. People join by finding the shop", p: "Staff type the shop's name in Find your shop and ask to join. Anyone already working in the shop can tap Yes, works here. Only you can approve an owner or manager. The join code in Manage shop still works too." },
       { h: "2. Change roles or remove someone", p: "Tick the roles and Save roles, or Remove from shop. Give another person the Shop manager role before you leave." },
       { h: "3. Watch the flags", p: "Flags show codes left unpaid after their day, paid amounts that differ from what staff typed, voids per person, handovers, and codes voided then remade under a different barber." },
       { h: "4. Problems and audit log", p: "Staff reports land in Problems. The Audit log shows every action: who, which role, what and when. Nobody can edit it." },
