@@ -2,6 +2,7 @@ import { requireShopRole } from "@/lib/context";
 import { s } from "@/lib/strings";
 import { Page } from "@/components/ui";
 import { ManageShop, type Member } from "./manage";
+import { JoinRequests, type JoinRequest } from "@/components/join-requests";
 
 export default async function Manage() {
   const { supabase, shop, profile } = await requireShopRole("manager");
@@ -19,9 +20,11 @@ export default async function Manage() {
     const p = m.profiles as unknown as { full_name: string; is_barber: boolean; signup_role?: string | null };
     return { id: m.id, user_id: m.user_id, status: m.status, roles: m.roles, name: p.full_name, is_barber: p.is_barber, signup_role: p.signup_role ?? null } as Member;
   });
+  const { data: requests } = await supabase.rpc("shop_join_requests", { p_shop: shop.shop_id });
   return (
     <Page title={s.shop.manageTitle}>
-      <ManageShop shop={shop} members={members} me={profile.id} site={process.env.NEXT_PUBLIC_SITE_URL ?? ""} />
+      <JoinRequests initial={(requests ?? []) as JoinRequest[]} />
+      <ManageShop shop={shop} members={members.filter((m) => m.status === "active")} me={profile.id} site={process.env.NEXT_PUBLIC_SITE_URL ?? ""} />
     </Page>
   );
 }

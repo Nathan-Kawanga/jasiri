@@ -155,6 +155,9 @@ describe("code chain rules", () => {
     expect(await errorOf(call(waiting, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["manager"] }))).toBe("not_allowed");
 
     await call(s.manager, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["barber"] });
+    // One vouch isn't enough in a shop of several people.
+    expect(await errorOf(call(waiting, "create_code", { p_shop: s.id, p_amount: 300, p_anonymous: true }))).toBe("not_allowed");
+    await call(s.barber, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["barber"] });
     const c = await call(waiting, "create_code", { p_shop: s.id, p_amount: 300, p_anonymous: true });
     expect(c.display_code).toMatch(/^[2-9A-HJKMNP-Z]{4}$/);
   });

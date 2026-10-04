@@ -29,13 +29,37 @@ describe("staff-led shops", () => {
     expect(await errorOf(call(stranger, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["service_staff"] }))).toBe("not_allowed");
     expect(await errorOf(call(lady, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["service_staff"] }))).toBe("not_allowed");
 
-    // The second barber (not the manager) sees the request and vouches. He can't hand out extra roles.
+    // Two different coworkers must say yes. They can't hand out extra roles.
     const reqs = await read(shop.barber, "shop_join_requests", { p_shop: shop.id });
-    expect(reqs.find((r: any) => r.membership_id === membership_id)).toMatchObject({ requested_role: "service_staff", can_decide: true });
-    await call(shop.barber, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["service_staff", "manager", "cashier"] });
+    expect(reqs.find((r: any) => r.membership_id === membership_id)).toMatchObject({ requested_role: "service_staff", can_decide: true, needed: 2, yes: 0 });
+    const first = await call(shop.barber, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["service_staff", "manager", "cashier"] });
+    expect(first).toMatchObject({ result: "pending", yes: 1, needed: 2 });
+    // Voting twice doesn't count twice.
+    expect((await call(shop.barber, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: [] })).result).toBe("pending");
+    expect(await errorOf(read(lady, "service_queue", { p_shop: shop.id }))).toBe("not_allowed");
+    expect((await call(shop.cashier, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: [] })).result).toBe("approved");
     const mine = (await read(lady, "my_shops")).find((m: any) => m.shop_id === shop.id);
     expect(mine.roles).toEqual(["service_staff"]);
     await read(lady, "service_queue", { p_shop: shop.id });
+  });
+
+  it("one No doesn't block; two Nos turn someone away; a one-person shop needs one vouch", async () => {
+    const shop = await newShop();
+    const a = await newUser({ role: "cashier" });
+    const { membership_id } = await call(a, "request_join_shop", { p_shop: shop.id, p_role: "cashier" });
+    expect((await call(shop.barber, "decide_join", { p_membership: membership_id, p_approve: false, p_roles: [] })).result).toBe("pending");
+    expect((await call(shop.staff, "decide_join", { p_membership: membership_id, p_approve: false, p_roles: [] })).result).toBe("rejected");
+
+    const solo = await newUser({ barber: true });
+    const { shop_id } = await call(solo, "create_shop", { p_name: "Solo Cuts", p_area: "Thika" });
+    const b2 = await newUser({ barber: true });
+    const r = await call(b2, "request_join_shop", { p_shop: shop_id, p_role: "barber" });
+    expect((await call(solo, "decide_join", { p_membership: r.membership_id, p_approve: true, p_roles: [] })).result).toBe("approved");
+    // Now there are two people: the next one needs both.
+    const b3 = await newUser({ barber: true });
+    const r3 = await call(b3, "request_join_shop", { p_shop: shop_id, p_role: "barber" });
+    expect((await call(solo, "decide_join", { p_membership: r3.membership_id, p_approve: true, p_roles: [] })).result).toBe("pending");
+    expect((await call(b2, "decide_join", { p_membership: r3.membership_id, p_approve: true, p_roles: [] })).result).toBe("approved");
   });
 
   it("only the shop's manager can approve someone joining as owner or manager", async () => {

@@ -68,7 +68,6 @@ export function ManageShop({ shop, members, me, site }: { shop: ShopMembership; 
   const [name, setName] = useState(shop.name);
   const [area, setArea] = useState(shop.area);
   const invite = `${site}/shop/join?code=${shop.join_code}`;
-  const requests = members.filter((m) => m.status === "pending");
   const active = members.filter((m) => m.status === "active");
 
   return (
@@ -84,11 +83,6 @@ export function ManageShop({ shop, members, me, site }: { shop: ShopMembership; 
         </div>
         <ErrorNote code={error} />
       </Card>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-bold">{s.shop.requests} ({requests.length})</h2>
-        {requests.map((m) => <MemberCard key={m.id} m={m} me={me} />)}
-      </section>
 
       <section className="space-y-3">
         <h2 className="text-lg font-bold">{s.shop.members} ({active.length})</h2>

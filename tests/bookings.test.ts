@@ -75,6 +75,7 @@ describe("booking link", () => {
     const b = await newShop();
     const { membership_id } = await call(a.barber, "request_join", { p_code: b.joinCode });
     await call(b.manager, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["barber"] });
+    await call(b.barber, "decide_join", { p_membership: membership_id, p_approve: true, p_roles: ["barber"] });
 
     const book = await read(a.barber, "my_client_book");
     expect(book.map((x: any) => x.first_name)).toEqual(["Loyal"]);
