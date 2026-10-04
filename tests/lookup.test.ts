@@ -29,12 +29,32 @@ describe("same client, another barber in the same shop", () => {
     expect(await errorOf(read(shop.cashier, "shop_client_lookup", { p_shop: shop.id, p_phone: "0712000111" }))).toBe("not_allowed");
 
     const [{ n }] = await sql("select count(*)::int n from public.audit_log where action = 'client.lookup' and actor_id = $1", [shop.barber.id]);
-    expect(n).toBe(2);
+    expect(n).toBe(2);  // "mine" lookups aren't logged or counted
   });
 
-  it("limits a barber to 30 lookups an hour", async () => {
+  it("allows 1 successful find per hour and 10 per day; misses don't count; over the limit reveals nothing", async () => {
     const shop = await newShop();
-    for (let i = 0; i < 30; i++) await read(shop.barber, "shop_client_lookup", { p_shop: shop.id, p_phone: `07120${String(i).padStart(5, "0")}` });
-    expect(await errorOf(read(shop.barber, "shop_client_lookup", { p_shop: shop.id, p_phone: "0712099999" }))).toBe("rate_limited");
+    const phones = ["0713000001", "0713000002"];
+    for (const p of phones) {
+      const c = await call(shop.manager, "create_code", { p_shop: shop.id, p_amount: 300, p_new_first_name: "Client", p_new_phone: p, p_consent: true });
+      await call(shop.manager, "confirm_code", { p_code: c.id });
+    }
+    // Many new-client lookups in a row: never blocked.
+    for (let i = 0; i < 5; i++) expect((await read(shop.barber, "shop_client_lookup", { p_shop: shop.id, p_phone: `07139${String(i).padStart(5, "0")}` })).status).toBe("new");
+    // First find works; the second within the hour answers like an unknown number.
+    expect((await read(shop.barber, "shop_client_lookup", { p_shop: shop.id, p_phone: phones[0] })).status).toBe("shop");
+    expect(await read(shop.barber, "shop_client_lookup", { p_shop: shop.id, p_phone: phones[1] })).toEqual({ status: "new" });
+
+    // Move the earlier find back 2 hours: one more find is allowed.
+    await sql("alter table public.audit_log disable trigger audit_log_no_update");
+    await sql("update public.audit_log set at = now() - interval '2 hours' where actor_id = $1 and action = 'client.lookup'", [shop.barber.id]);
+    await sql("alter table public.audit_log enable trigger audit_log_no_update");
+    expect((await read(shop.barber, "shop_client_lookup", { p_shop: shop.id, p_phone: phones[1] })).status).toBe("shop");
+  });
+
+  it("caps number guessing at 60 misses a day", async () => {
+    const shop = await newShop();
+    for (let i = 0; i < 60; i++) await read(shop.barber, "shop_client_lookup", { p_shop: shop.id, p_phone: `07140${String(i).padStart(5, "0")}` });
+    expect(await errorOf(read(shop.barber, "shop_client_lookup", { p_shop: shop.id, p_phone: "0714099999" }))).toBe("rate_limited");
   });
 });
