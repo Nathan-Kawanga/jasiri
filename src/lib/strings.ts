@@ -79,7 +79,7 @@ export const s = {
     noShopBarber: "Your client book and booking link work without a shop. Codes need a shop.",
     createShop: "Create a shop",
     joinShop: "Join a shop",
-    pending: "Waiting for the shop manager to approve you.",
+    pending: "Waiting for coworkers in this shop to confirm you. Ask them to open Jasiri and tap Yes.",
     switchShop: "Switch shop",
     newCode: "New code",
     myDay: "My day",
