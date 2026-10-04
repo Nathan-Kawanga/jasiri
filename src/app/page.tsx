@@ -51,9 +51,9 @@ export default async function Home() {
   }
   if (ctx.profile.suspended) redirect("/suspended");
   const { profile, shops, usableShops, current, roles, supabase } = ctx;
-  const { data: requests } = current
+  const { data: requests, error: requestsError } = current
     ? await supabase.rpc("shop_join_requests", { p_shop: current.shop_id })
-    : { data: [] };
+    : { data: [], error: null };
   const has = (r: string) => roles.includes(r as never);
   const pending = shops.filter((m) => m.status === "pending");
   const first = profile.full_name.split(" ")[0];
@@ -113,7 +113,7 @@ export default async function Home() {
           <div className="mb-4"><Notice>{s.home.noShop} {profile.is_barber ? s.home.noShopBarber : null}</Notice></div>
         )}
 
-        <JoinRequests initial={(requests ?? []) as JoinRequest[]} />
+        {current ? <JoinRequests shopId={current.shop_id} initial={(requests ?? []) as JoinRequest[]} initialError={requestsError ? "requests_failed" : null} /> : null}
 
         {pending.map((m) => (
           <div key={m.membership_id} className="mb-3"><Notice tone="warn"><b>{m.name}</b>: {s.home.pending}</Notice></div>

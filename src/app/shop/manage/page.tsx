@@ -20,10 +20,10 @@ export default async function Manage() {
     const p = m.profiles as unknown as { full_name: string; is_barber: boolean; signup_role?: string | null };
     return { id: m.id, user_id: m.user_id, status: m.status, roles: m.roles, name: p.full_name, is_barber: p.is_barber, signup_role: p.signup_role ?? null } as Member;
   });
-  const { data: requests } = await supabase.rpc("shop_join_requests", { p_shop: shop.shop_id });
+  const { data: requests, error: requestsError } = await supabase.rpc("shop_join_requests", { p_shop: shop.shop_id });
   return (
     <Page title={s.shop.manageTitle}>
-      <JoinRequests initial={(requests ?? []) as JoinRequest[]} />
+      <JoinRequests shopId={shop.shop_id} initial={(requests ?? []) as JoinRequest[]} initialError={requestsError ? "requests_failed" : null} />
       <ManageShop shop={shop} members={members.filter((m) => m.status === "active")} me={profile.id} site={process.env.NEXT_PUBLIC_SITE_URL ?? ""} />
     </Page>
   );

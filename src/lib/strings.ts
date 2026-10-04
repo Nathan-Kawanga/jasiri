@@ -575,6 +575,7 @@ export const s = {
     not_active: "This membership has ended.",
     manager_must_approve: "Only the shop manager can approve an owner or manager.",
     barber_profile_required: "Turn on \"I am a barber\" in My account first.",
+    requests_failed: "Couldn't load join requests. Check your connection; if it keeps happening, tell the Jasiri team.",
     too_many_photos: "You can have up to 12 photos. Remove one first.",
     upload_failed: "Upload failed. Check your connection and try again.",
   } as Record<string, string | ((n: number) => string)>,
