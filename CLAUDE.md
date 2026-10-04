@@ -2,6 +2,8 @@
 
 # Jasiri: notes for code changes
 
+- **Start by reading `docs/HANDOFF.md`**: decisions made with Nathan, live database status, pilot, open items.
+
 - Business rules belong in Postgres (`supabase/migrations`), not in React. Writes go through
   `public.*` security-definer functions that take `p_request uuid` (idempotency) and raise short
   error codes (`not_allowed`, `code_is_final`, …) mapped to words in `src/lib/strings.ts`.
