@@ -34,7 +34,7 @@ export default async function FlagsPage({ searchParams }: PageProps<"/shop/flags
   const f = data as Flags;
   const d = (ymd: string) => dayLabel(ymd + "T12:00:00+03:00");
   return (
-    <Page title={s.manager.flagsTitle}>
+    <Page title={s.manager.flagsTitle} back="/shop/admin">
       <RangeNav base="/shop/flags" days={days} />
       <div className="space-y-3">
         <Section title={s.manager.openAfterDay} count={f.open_after_day.length}>

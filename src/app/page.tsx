@@ -123,6 +123,7 @@ export default async function Home() {
           {current && has("barber") ? <HeroTile href="/code/new" label={s.home.newCode} hint={s.home.newCodeHint} icon="scissors" /> : null}
           {current && has("service_staff") && !has("barber") ? <HeroTile href="/queue" label={s.home.queue} hint={s.home.queueHint} icon="sparkles" /> : null}
           {current && has("cashier") && !has("barber") && !has("service_staff") ? <HeroTile href="/cashier" label={s.home.cashier} hint={s.home.cashierHint} icon="cash" /> : null}
+          {current && has("manager") && !has("barber") && !has("service_staff") && !has("cashier") ? <HeroTile href="/shop/admin" label={s.home.shopAdmin} hint={s.home.shopAdminHint} icon="users" /> : null}
           {current && has("service_staff") && has("barber") ? <Tile href="/queue" label={s.home.queue} icon="sparkles" /> : null}
           {current && has("service_staff") && !profile.is_barber ? <Tile href="/services" label={s.home.myServices} icon="list" /> : null}
           {current && has("cashier") && (has("barber") || has("service_staff")) ? <Tile href="/cashier" label={s.home.cashier} icon="cash" /> : null}
@@ -137,17 +138,11 @@ export default async function Home() {
             <Tile href="/share" label={s.home.bookingLink} icon="link" />
             <Tile href="/availability" label={s.home.availability} icon="clock" />
           </> : null}
-          {current && (has("cashier") || has("manager")) ? <>
+          {current && has("cashier") ? <>
             <Tile href="/shop/payout" label={s.home.payout} icon="list" />
             <Tile href="/shop/summary" label={s.home.summary} icon="chart" />
           </> : null}
-          {current && has("manager") ? <>
-            <Tile href="/shop/manage" label={s.home.manage} icon="users" />
-            <Tile href="/shop/flags" label={s.home.flags} icon="flag" />
-            <Tile href="/shop/usage" label={s.home.usage} icon="chart" />
-            <Tile href="/shop/problems" label={s.home.problems} icon="alert" />
-            <Tile href="/shop/audit" label={s.home.audit} icon="shield" />
-          </> : null}
+          {current && has("manager") ? <Tile href="/shop/admin" label={s.home.shopAdmin} icon="users" /> : null}
           {profile.is_platform_admin ? <Tile href="/admin" label={s.home.admin} icon="shield" /> : null}
           <Tile href="/guide" label={s.home.guide} icon="help" />
         </div>

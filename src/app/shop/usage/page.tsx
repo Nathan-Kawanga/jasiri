@@ -21,7 +21,7 @@ export default async function UsagePage({ searchParams }: PageProps<"/shop/usage
   const { data } = await supabase.rpc("shop_usage", { p_shop: shop.shop_id, p_from: from, p_to: to });
   const u = data as Usage;
   return (
-    <Page title={s.manager.usageTitle} actions={<a href={`/api/export/usage?format=csv&shop=${shop.shop_id}&from=${from}&to=${to}`} className="min-h-12 px-2 py-3 font-semibold text-brand">{s.app.downloadCsv}</a>}>
+    <Page title={s.manager.usageTitle} back="/shop/admin" actions={<a href={`/api/export/usage?format=csv&shop=${shop.shop_id}&from=${from}&to=${to}`} className="min-h-12 px-2 py-3 font-semibold text-brand">{s.app.downloadCsv}</a>}>
       <RangeNav base="/shop/usage" days={days} />
       <div className="space-y-4">
         <UsageCodes m={u.codes} />

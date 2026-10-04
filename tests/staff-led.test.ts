@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { randomUUID } from "node:crypto";
-import { call, read, errorOf, newShop, newUser } from "./helpers";
+import { call, read, errorOf, newShop, newUser, sql } from "./helpers";
 
 describe("staff-led shops", () => {
   it("finds a shop by typing part of its name, even with a typo", async () => {
@@ -79,5 +79,20 @@ describe("staff-led shops", () => {
     expect((await read(lady, "my_shops")).find((m: any) => m.shop_id === shop_id).roles.sort()).toEqual(["manager", "service_staff"]);
     const nonBarber = await newUser({ role: "cashier" });
     expect(await errorOf(call(nonBarber, "request_join_shop", { p_shop: shop_id, p_role: "barber" }))).toBe("barber_profile_required");
+  });
+  it("a barber who adds a shop is its manager AND a barber who can make codes", async () => {
+    const joe = await newUser({ barber: true });
+    const { shop_id } = await call(joe, "create_shop", { p_name: `Barber First ${randomUUID().slice(0, 6)}`, p_area: "Ruai" });
+    const [m] = await sql("select roles::text[] as roles from public.memberships where shop_id = $1 and user_id = $2", [shop_id, joe.id]);
+    expect(m.roles.sort()).toEqual(["barber", "manager"]);
+    const c = await call(joe, "create_code", { p_shop: shop_id, p_amount: 300, p_anonymous: true });
+    expect(c.id).toBeTruthy();
+
+    // Repair path: a barber left as manager-only gets barber back by saving the profile.
+    await sql("update public.memberships set roles = '{manager}' where shop_id = $1 and user_id = $2", [shop_id, joe.id]);
+    const p = await read(joe, "my_profile");
+    await joe.client.rpc("update_my_profile", { p_full_name: p.full_name, p_is_barber: true, p_handle: p.handle, p_about: p.about, p_slot_minutes: p.slot_minutes });
+    const [m2] = await sql("select roles::text[] as roles from public.memberships where shop_id = $1 and user_id = $2", [shop_id, joe.id]);
+    expect(m2.roles.sort()).toEqual(["barber", "manager"]);
   });
 });

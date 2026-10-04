@@ -22,7 +22,7 @@ export default async function Manage() {
   });
   const { data: requests, error: requestsError } = await supabase.rpc("shop_join_requests", { p_shop: shop.shop_id });
   return (
-    <Page title={s.shop.manageTitle}>
+    <Page title={s.shop.manageTitle} back="/shop/admin">
       <JoinRequests shopId={shop.shop_id} initial={(requests ?? []) as JoinRequest[]} initialError={requestsError ? "requests_failed" : null} />
       <ManageShop shop={shop} members={members.filter((m) => m.status === "active")} me={profile.id} site={process.env.NEXT_PUBLIC_SITE_URL ?? ""} />
     </Page>

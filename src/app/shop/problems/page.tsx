@@ -11,7 +11,7 @@ export default async function ProblemsPage() {
     .eq("shop_id", shop.shop_id).order("created_at", { ascending: false }).limit(100);
   const rows = (data ?? []) as unknown as { id: string; note: string; status: string; resolution_note: string | null; created_at: string; reporter: { full_name: string } }[];
   return (
-    <Page title={s.manager.problemsTitle}>
+    <Page title={s.manager.problemsTitle} back="/shop/admin">
       <div className="space-y-3">
         {rows.length === 0 ? <Empty>{s.app.none}</Empty> : null}
         {rows.map((r) => (

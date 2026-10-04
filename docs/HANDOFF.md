@@ -23,8 +23,8 @@ Read this, then `CLAUDE.md` and `README.md`, before changing anything.
 
 ## Hosted database status (as of the end of the cloud session)
 Applied: setup-all (initial), update 2 (photos), update 4 (lookup limits), update 8
-(repair = updates 5, 6, 7). **Update 9 (services and prices) was just pushed; confirm
-with Nathan that he ran it.**
+(repair = updates 5, 6, 7). **Confirm with Nathan that he ran update 9 (services and
+prices) and update 10 (barber-first: a barber who adds a shop stays a barber).**
 
 ## Decisions made with Nathan (don't undo without asking)
 - No price list or commission shares. Staff type what they charged; cashier types what
@@ -37,7 +37,9 @@ with Nathan that he ran it.**
 - Barbers drive adoption, not owners. Anyone signs up, picks a role, finds the shop by
   name (typo-tolerant) or adds it. New staff need 2 coworkers to vouch (1 while the shop has
   one person); 2 "No"s reject. Owner/manager requests are approved by the shop's manager only.
-  Whoever adds a shop becomes its manager and can hand the role over.
+  Whoever adds a shop becomes its manager and can hand the role over. A barber who adds a
+  shop is manager AND barber: home shows the barber view; manager tools sit behind one
+  "Shop admin" tile (`/shop/admin`). Manager-only accounts land on Shop admin.
 - Same client with another barber in the same shop: look up by exact phone number only;
   first name returned; 1 successful find per hour and 10 per day per barber; misses don't
   count (60/day cap); over the limit answers like "not found".

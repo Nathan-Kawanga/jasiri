@@ -15,7 +15,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/shop/audit
   const { data: people } = ids.length ? await supabase.from("profiles").select("id, full_name").in("id", ids) : { data: [] };
   const names = Object.fromEntries((people ?? []).map((p) => [p.id, p.full_name]));
   return (
-    <Page title={s.manager.auditTitle}>
+    <Page title={s.manager.auditTitle} back="/shop/admin">
       <AuditList rows={rows} names={names} moreHref={rows.length === 50 ? `/shop/audit?before=${rows[49].id}` : null} />
     </Page>
   );
