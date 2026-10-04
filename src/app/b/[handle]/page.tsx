@@ -12,7 +12,7 @@ async function load(handle: string): Promise<PublicBarber | null> {
   const { data } = await serviceClient().rpc("public_barber_page", { p_handle: handle });
   if (!data) return null;
   const b = data as PublicBarber;
-  return { ...b, photos: b.photos ?? [], photo_path: b.photo_path ?? null };
+  return { ...b, photos: b.photos ?? [], photo_path: b.photo_path ?? null, services: b.services ?? [], extras: b.extras ?? [] };
 }
 
 export async function generateMetadata({ params }: PageProps<"/b/[handle]">): Promise<Metadata> {
@@ -58,6 +58,26 @@ export default async function PublicBarberPage({ params }: PageProps<"/b/[handle
           <div className="mt-1 flex items-center gap-1.5 text-muted"><Icon name="store" size={18} />{barber.shop.name} · {barber.shop.area}</div>
         ) : null}
         {barber.about ? <p className="mt-4 whitespace-pre-line rounded-2xl border border-line bg-surface p-4 text-base">{barber.about}</p> : null}
+
+        {barber.services.length || barber.extras.length ? (
+          <section className="mt-6">
+            <h2 className="mb-3 text-xl font-bold">{s.services.menu}</h2>
+            <div className="divide-y divide-line rounded-2xl border border-line bg-surface">
+              {barber.services.map((x) => (
+                <div key={x.name} className="flex items-center justify-between px-4 py-3">
+                  <span>{x.name}{x.minutes ? <span className="text-sm text-muted"> · {x.minutes} {s.booking.minutes}</span> : null}</span>
+                  <b className="tabular-nums">KES {x.price}</b>
+                </div>
+              ))}
+              {barber.extras.length ? <div className="px-4 pb-1 pt-3 text-sm font-semibold text-muted">{s.services.extras}</div> : null}
+              {barber.extras.map((x) => (
+                <div key={"x" + x.name} className="flex items-center justify-between px-4 py-3">
+                  <span>{x.name}</span><span className="tabular-nums text-muted">{s.services.from} KES {x.price}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {barber.photos.length ? (
           <section className="mt-6">

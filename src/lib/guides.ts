@@ -7,7 +7,7 @@ export const guides: Record<string, Guide> = {
     who: "You cut. Every client you serve gets a code from your phone. That code is your proof of work.",
     steps: [
       { h: "1. After the cut, tap New code", p: "Pick the client: Returning (search name or last digits), New (hand him the phone to type his name and number and tick the box), or No details if he refuses. From your day view, Start code on a booking picks him for you." },
-      { h: "2. Type what you charged", p: "Type the amount in KES, then Make code." },
+      { h: "2. Type what you charged", p: "Tap your services to fill the amount (set them up in My services), or type it. Then Make code." },
       { h: "3. The client taps Confirm my code", p: "Show him the screen. His tap opens the code. The app tells you which service lady to send him to. The cashier can see the code at the same moment." },
       { h: "4. Check your earnings", p: "My earnings shows Cashier-confirmed codes (the client paid) and Self-recorded ones (not paid yet). Download Excel or PDF to hand to your boss." },
       { h: "5. Bring your shop on", p: "If your shop isn't on Jasiri yet, add it in Find your shop. You become its manager. Coworkers find it by name; two people already in the shop tap Yes to let each new person in. Hand the manager role to the owner when he joins." },
@@ -27,7 +27,7 @@ export const guides: Record<string, Guide> = {
       { h: "1. Start my day", p: "Open My queue and tap Start my day so codes come to you. Tap Go off duty when you leave. It resets at midnight." },
       { h: "2. A code arrives", p: "It appears in Sent to me by itself. If nobody was on duty, it waits in Unassigned: tap Take." },
       { h: "3. The client taps to confirm", p: "Open the code when he reaches you and let him tap Client: tap to confirm." },
-      { h: "4. Type what you charged", p: "Add each service with its amount (the head wash, then any extras). Tap Done – send to cashier." },
+      { h: "4. Type what you charged", p: "Tap your services (set them up in My services) or type the amount for each one. Tap Done – send to cashier. Your services also show on barbers' booking pages as extras." },
       { h: "5. Other cases", p: "Client leaves without any service: No service. Someone else will do it: Hand to a colleague. Client only wants your services, no haircut: New service-only code." },
     ],
     rules: [

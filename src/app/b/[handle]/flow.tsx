@@ -10,6 +10,7 @@ export type PublicBarber = {
   name: string; handle: string; about: string | null; slot_minutes: number;
   shop: { name: string; area: string } | null; slots: string[];
   photo_path: string | null; photos: { path: string; caption: string | null }[];
+  services: { name: string; price: number; minutes: number | null }[]; extras: { name: string; price: number }[];
 };
 
 export function BookingFlow({ barber }: { barber: PublicBarber }) {
@@ -23,6 +24,13 @@ export function BookingFlow({ barber }: { barber: PublicBarber }) {
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState<Booked | null>(null);
   const [dayIdx, setDayIdx] = useState(0);
+  const [picked, setPicked] = useState<string[]>([]);
+  const menu = [
+    ...barber.services.map((x) => ({ ...x, extra: false })),
+    ...barber.extras.map((x) => ({ ...x, minutes: null, extra: true })),
+  ];
+  const estimate = menu.filter((m) => picked.includes(m.name)).reduce((a, m) => a + m.price, 0);
+  const toggle = (n: string) => setPicked((p) => (p.includes(n) ? p.filter((x) => x !== n) : [...p, n]));
   const requestId = useRef(uuid());
 
   const byDay = useMemo(() => {
@@ -41,6 +49,7 @@ export function BookingFlow({ barber }: { barber: PublicBarber }) {
         <div className="mx-auto inline-flex size-20 items-center justify-center rounded-full gold-grad text-4xl font-black text-black shine">✓</div>
         <div className="text-2xl font-black">{s.booking.booked}</div>
         <div className="text-xl">{dayLabel(done.slot_start)} · <b>{time(done.slot_start)}</b></div>
+        {done.services?.length ? <div className="text-sm">{done.services.map((x) => x.name).join(" · ")}</div> : null}
         <div className="text-muted tabular-nums">{done.masked_phone}</div>
         <Notice>{s.booking.keepLink}</Notice>
         <a href={cancelUrl} className="block min-h-12 py-3 font-semibold text-red-400">{s.booking.cancelLink}</a>
@@ -61,7 +70,7 @@ export function BookingFlow({ barber }: { barber: PublicBarber }) {
   async function submit() {
     setError(null);
     setPending(true);
-    const r = await book({ requestId: requestId.current, handle: barber.handle, slotStart: slot!, phone, firstName: name, consent });
+    const r = await book({ requestId: requestId.current, handle: barber.handle, slotStart: slot!, phone, firstName: name, consent, services: picked });
     setPending(false);
     if (r.ok) return setDone(r.data);
     requestId.current = uuid();
@@ -104,6 +113,21 @@ export function BookingFlow({ barber }: { barber: PublicBarber }) {
             <div className="text-xl font-bold">{dayLabel(slot)} · {time(slot)}</div>
             <button className="min-h-12 px-2 font-semibold text-brand" onClick={() => { setSlot(null); setNeedName(null); }}>{s.app.back}</button>
           </div>
+          {menu.length && needName === null ? (
+            <fieldset className="space-y-2">
+              <legend className="mb-1 font-semibold">{s.services.pick}</legend>
+              <div className="flex flex-wrap gap-2">
+                {menu.map((m) => (
+                  <button type="button" key={(m.extra ? "x" : "b") + m.name} onClick={() => toggle(m.name)} aria-pressed={picked.includes(m.name)}
+                    className={`min-h-11 rounded-full border px-3 text-sm font-semibold ${picked.includes(m.name) ? "border-brand bg-brand/15 text-ink" : "border-line bg-surface-2 text-muted"}`}>
+                    {m.name} · {m.extra ? `${s.services.from} ` : ""}{m.price}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted">{s.services.pickHint}</p>
+              {picked.length ? <p className="font-semibold">{s.services.estimate}: KES {estimate}</p> : null}
+            </fieldset>
+          ) : null}
           {needName === null ? (
             <form onSubmit={next} className="space-y-3">
               <Field label={s.booking.yourPhone}><Input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" required autoComplete="tel" placeholder="0712 345 678" /></Field>

@@ -163,6 +163,19 @@ async function main() {
   await code({ barber: null, at: new Date(Date.now() - 40 * 60_000), amount: 0, staff: ids.mary,
     lines: [{ by: ids.mary, amount: 300, note: "Facial" }], end: "open" });
 
+  // Price lists: each barber and service lady keeps their own.
+  for (const [who, items] of [
+    [ids.juma, [["Haircut", 300, 30], ["Fade", 400, 40], ["Beard trim", 100, 15]]],
+    [ids.brian, [["Haircut", 300, 30], ["Taper fade", 400, 40], ["Beard trim", 100, 15], ["Kids cut", 200, 20]]],
+    [ids.kevin, [["Haircut", 250, 30], ["Fade", 350, 40], ["Dye", 500, 45]]],
+    [ids.mary, [["Head wash", 100, null], ["Massage", 300, null], ["Facial", 300, null]]],
+    [ids.grace, [["Head wash", 100, null], ["Massage", 250, null], ["Scrub", 400, null]]],
+  ] as [string, [string, number, number | null][]][]) {
+    for (const [i, [name, price, minutes]] of items.entries()) {
+      await q("insert into public.services (owner_id, name, price, minutes, sort) values ($1,$2,$3,$4,$5)", [who, name, price, minutes, i]);
+    }
+  }
+
   // Bookable times for every barber: Mon–Sat 09:00–13:00 and 14:00–19:00.
   for (const b of barbers) {
     for (let wd = 1; wd <= 6; wd++) {

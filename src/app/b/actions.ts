@@ -20,19 +20,24 @@ export async function checkPhone(handle: string, phone: string): Promise<Result<
   return { ok: true, data: { known: data === true } };
 }
 
-export type Booked = { slot_start: string; barber_name: string; masked_phone: string; cancel_token: string };
+export type Booked = { slot_start: string; barber_name: string; masked_phone: string; cancel_token: string; services?: { name: string; price: number }[] };
 
 export async function book(input: {
-  requestId: string; handle: string; slotStart: string; phone: string; firstName?: string; consent?: boolean;
+  requestId: string; handle: string; slotStart: string; phone: string; firstName?: string; consent?: boolean; services?: string[];
 }): Promise<Result<Booked>> {
   const e164 = normalizePhone(input.phone);
   if (!e164) return { ok: false, error: "invalid_phone" };
   const ip = await clientIp();
   if (await limited([[`book-ip:${ip}`, 10, 600], [`book-phone:${e164}`, 5, 86400]])) return { ok: false, error: "rate_limited" };
-  const { data, error } = await serviceClient().rpc("public_book", {
+  const base = {
     p_request: input.requestId, p_handle: input.handle, p_slot_start: input.slotStart, p_phone: e164,
     p_first_name: input.firstName ?? null, p_consent: input.consent ?? false,
-  });
+  };
+  let { data, error } = await serviceClient().rpc("public_book", { ...base, p_services: (input.services ?? []).slice(0, 8) });
+  // Until the database has update 9, book without services rather than failing.
+  if (error && /p_services|could not find the function/i.test(error.message)) {
+    ({ data, error } = await serviceClient().rpc("public_book", base));
+  }
   if (error) return { ok: false, error: error.message };
   return { ok: true, data: data as Booked };
 }

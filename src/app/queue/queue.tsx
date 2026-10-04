@@ -17,7 +17,9 @@ export type QueueData = {
   on_duty: boolean; codes: QCode[]; colleagues: { id: string; name: string; on_duty: boolean }[]; recent_amounts: number[];
 };
 
-export function Queue({ shopId, initial }: { shopId: string; initial: QueueData }) {
+type Svc = { name: string; price: number };
+
+export function Queue({ shopId, initial, services }: { shopId: string; initial: QueueData; services: Svc[] }) {
   const { data, reload } = useLive<QueueData>("service_queue", { p_shop: shopId }, shopId, initial);
   const [openId, setOpenId] = useState<string | null>(null);
   const { run, pending, error } = useAct();
@@ -26,7 +28,7 @@ export function Queue({ shopId, initial }: { shopId: string; initial: QueueData 
   const unassigned = data.codes.filter((c) => !c.mine);
   const open = data.codes.find((c) => c.id === openId && c.mine);
 
-  if (open) return <CodeWork code={open} data={data} onClose={() => { setOpenId(null); reload(); }} reload={reload} />;
+  if (open) return <CodeWork code={open} data={data} services={services} onClose={() => { setOpenId(null); reload(); }} reload={reload} />;
 
   return (
     <div className="space-y-5">
@@ -94,7 +96,7 @@ function ServiceOnly({ shopId, onMade }: { shopId: string; onMade: (id: string) 
   );
 }
 
-function CodeWork({ code, data, onClose, reload }: { code: QCode; data: QueueData; onClose: () => void; reload: () => Promise<void> }) {
+function CodeWork({ code, data, services, onClose, reload }: { code: QCode; data: QueueData; services: Svc[]; onClose: () => void; reload: () => Promise<void> }) {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [handing, setHanding] = useState(false);
@@ -141,7 +143,16 @@ function CodeWork({ code, data, onClose, reload }: { code: QCode; data: QueueDat
           if (await go("add_service_line", { p_code: code.id, p_amount: Number(amount), p_note: note || null })) { setAmount(""); setNote(""); }
         }}>
           <div className="text-sm font-semibold">{s.queue.addService}</div>
-          {data.recent_amounts.length ? (
+          {services.length ? (
+            <div className="flex flex-wrap gap-2">
+              {services.map((x) => (
+                <button type="button" key={x.name} onClick={() => { setAmount(String(x.price)); setNote(x.name); }}
+                  className={`min-h-12 rounded-2xl border px-3 font-semibold ${note === x.name ? "border-brand bg-brand/15" : "border-line bg-surface-2"}`}>
+                  {x.name} <span className="tabular-nums">{x.price}</span>
+                </button>
+              ))}
+            </div>
+          ) : data.recent_amounts.length ? (
             <div className="flex flex-wrap gap-2">
               {data.recent_amounts.map((a) => (
                 <button type="button" key={a} onClick={() => setAmount(String(a))}

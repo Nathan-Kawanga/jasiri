@@ -12,6 +12,7 @@ import { ErrorNote } from "@/components/error-note";
 type Booking = {
   id: string; slot_start: string; slot_end: string; status: string; source: "link" | "manual";
   client_first_name: string | null; client_phone: string | null; code_id: string | null;
+  services?: { name: string; price: number }[];
 };
 export type DayData = { bookings: Booking[]; free_slots: { slot_start: string; slot_end: string }[] };
 type Item = { kind: "booking"; at: string; b: Booking } | { kind: "free"; at: string; end: string };
@@ -44,6 +45,11 @@ export function DayView({ day, data, canCode, barberName }: { day: string; data:
             <Badge tone={it.b.status === "booked" ? "green" : it.b.status === "no_show" ? "red" : "gray"}>{s.booking.status[it.b.status]}</Badge>
           </div>
           <div className="text-lg font-semibold">{it.b.client_first_name ?? "—"}</div>
+          {it.b.services?.length ? (
+            <div className="flex flex-wrap gap-1.5">
+              {it.b.services.map((x) => <span key={x.name} className="rounded-full bg-brand/10 px-2.5 py-0.5 text-sm text-amber-200">{x.name} · {x.price}</span>)}
+            </div>
+          ) : null}
           <div className="flex items-center justify-between text-sm text-muted">
             {it.b.client_phone ? <a className="font-semibold text-brand" href={`tel:${it.b.client_phone}`}>{displayPhone(it.b.client_phone)}</a> : <span />}
             <span>{it.b.source === "link" ? s.booking.sourceLink : s.booking.sourceManual}</span>

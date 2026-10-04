@@ -124,6 +124,7 @@ export default async function Home() {
           {current && has("service_staff") && !has("barber") ? <HeroTile href="/queue" label={s.home.queue} hint={s.home.queueHint} icon="sparkles" /> : null}
           {current && has("cashier") && !has("barber") && !has("service_staff") ? <HeroTile href="/cashier" label={s.home.cashier} hint={s.home.cashierHint} icon="cash" /> : null}
           {current && has("service_staff") && has("barber") ? <Tile href="/queue" label={s.home.queue} icon="sparkles" /> : null}
+          {current && has("service_staff") && !profile.is_barber ? <Tile href="/services" label={s.home.myServices} icon="list" /> : null}
           {current && has("cashier") && (has("barber") || has("service_staff")) ? <Tile href="/cashier" label={s.home.cashier} icon="cash" /> : null}
           {profile.is_barber ? <>
             <Tile href="/day" label={s.home.myDay} icon="calendar" />
@@ -132,6 +133,7 @@ export default async function Home() {
           {profile.is_barber || has("service_staff") || has("barber") ? <Tile href="/earnings" label={s.home.earnings} icon="wallet" /> : null}
           {profile.is_barber ? <>
             <Tile href="/photos" label={s.home.myCuts} icon="image" />
+            <Tile href="/services" label={s.home.myServices} icon="list" />
             <Tile href="/share" label={s.home.bookingLink} icon="link" />
             <Tile href="/availability" label={s.home.availability} icon="clock" />
           </> : null}

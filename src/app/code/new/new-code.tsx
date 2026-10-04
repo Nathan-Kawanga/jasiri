@@ -8,7 +8,7 @@ import { normalizePhone } from "@/lib/phone";
 import { Button, Card, Field, Input, Notice } from "@/components/ui";
 import { ErrorNote } from "@/components/error-note";
 
-export type Preselected = { bookingId: string; firstName: string };
+export type Preselected = { bookingId: string; firstName: string; services?: string[] };
 type Client = { id: string; first_name: string; phone: string; visits: number; due: boolean };
 type Who =
   | { kind: "returning"; client: Client }
@@ -16,10 +16,20 @@ type Who =
   | { kind: "anonymous" }
   | { kind: "booking"; bookingId: string; firstName: string };
 
-export function NewCode({ shopId, barberName, preselected }: { shopId: string; barberName: string; preselected: Preselected | null }) {
+export function NewCode({ shopId, barberName, preselected, services }: {
+  shopId: string; barberName: string; preselected: Preselected | null; services: { name: string; price: number }[];
+}) {
   const [who, setWho] = useState<Who | null>(preselected ? { kind: "booking", ...preselected } : null);
   const [mode, setMode] = useState<"pick" | "search" | "new">("pick");
-  const [amount, setAmount] = useState("");
+  const initialPicked = (preselected?.services ?? []).filter((n) => services.some((x) => x.name === n));
+  const [picked, setPicked] = useState<string[]>(initialPicked);
+  const sumOf = (names: string[]) => services.filter((x) => names.includes(x.name)).reduce((a, x) => a + x.price, 0);
+  const [amount, setAmount] = useState(initialPicked.length ? String(sumOf(initialPicked)) : "");
+  const toggle = (n: string) => {
+    const next = picked.includes(n) ? picked.filter((x) => x !== n) : [...picked, n];
+    setPicked(next);
+    setAmount(next.length ? String(sumOf(next)) : "");
+  };
   const { run, pending, error } = useAct();
   const router = useRouter();
 
@@ -60,6 +70,19 @@ export function NewCode({ shopId, barberName, preselected }: { shopId: string; b
         {who.kind !== "booking" ? <button type="button" className="min-h-12 px-2 font-semibold text-brand" onClick={() => { setWho(null); setMode("pick"); }}>{s.app.cancel}</button> : null}
       </Card>
       <ErrorNote code={error} />
+      {services.length ? (
+        <div>
+          <div className="mb-2 text-sm font-semibold text-muted">{s.services.tapToAdd}</div>
+          <div className="flex flex-wrap gap-2">
+            {services.map((x) => (
+              <button type="button" key={x.name} onClick={() => toggle(x.name)} aria-pressed={picked.includes(x.name)}
+                className={`min-h-12 rounded-2xl border px-3 font-semibold ${picked.includes(x.name) ? "border-brand bg-brand/15" : "border-line bg-surface-2 text-muted"}`}>
+                {x.name} <span className="tabular-nums">{x.price}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
       <Field label={s.code.amountCharged}>
         <Input value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} inputMode="numeric"
                required autoFocus className="text-3xl font-bold tabular-nums" placeholder="300" />
