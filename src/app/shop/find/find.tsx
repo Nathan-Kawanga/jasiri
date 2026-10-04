@@ -16,6 +16,7 @@ type Role = "barber" | "service_staff" | "cashier" | "manager";
 export function FindShop({ isBarber, defaultRole }: { isBarber: boolean; defaultRole: string | null }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Shop[] | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [picked, setPicked] = useState<Shop | null>(null);
   const [adding, setAdding] = useState(false);
   const [area, setArea] = useState("");
@@ -34,7 +35,10 @@ export function FindShop({ isBarber, defaultRole }: { isBarber: boolean; default
   useEffect(() => {
     if (q.trim().length < 2) return;
     const t = setTimeout(() => {
-      read<Shop[]>("search_shops", { p_query: q }).then(setResults).catch(() => setResults([]));
+      read<Shop[]>("search_shops", { p_query: q })
+        .then((r) => { setSearchError(null); setResults(r); })
+        // Never pretend a shop doesn't exist when the search itself failed: that creates duplicates.
+        .catch((e: { code?: string }) => { setResults(null); setSearchError(e.code ?? "generic"); });
     }, 250);
     return () => clearTimeout(t);
   }, [q]);
@@ -82,6 +86,8 @@ export function FindShop({ isBarber, defaultRole }: { isBarber: boolean; default
         <Input value={q} onChange={(e) => { setQ(e.target.value); setAdding(false); }} autoFocus placeholder="e.g. Kinyozi Bora" />
       </Field>
 
+      {searchError ? <Notice tone="error">{s.shop.searchFailed}</Notice> : null}
+
       {shown?.map((r) => (
         <button key={r.id} disabled={r.mine} onClick={() => setPicked(r)}
           className="flex w-full items-center gap-3 rounded-3xl border border-line bg-surface p-4 text-left hover:border-brand/40 disabled:opacity-60">
@@ -94,7 +100,7 @@ export function FindShop({ isBarber, defaultRole }: { isBarber: boolean; default
         </button>
       ))}
 
-      {shown !== null && !adding ? (
+      {shown !== null && !searchError && !adding ? (
         <button onClick={() => setAdding(true)} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-line font-semibold text-brand">
           <Icon name="plus" size={18} />{s.shop.notListed(q.trim())}
         </button>

@@ -151,6 +151,7 @@ export const s = {
     joined: "Approved. They're in.",
     turnedAway: "Turned away.",
     findOrAdd: "Find or add your shop",
+    searchFailed: "Shop search isn't working right now, so we can't check if your shop is already here. Please try again later; don't add the shop yet.",
     findShop: "Find shop",
     askToJoin: "Ask to join",
     requestSent: "Request sent. The shop manager must approve you before you can use the shop.",
