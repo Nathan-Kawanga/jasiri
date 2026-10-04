@@ -24,22 +24,22 @@ function displayCode() {
   }
 }
 
-type Person = { key: string; name: string; phone?: string; email?: string; pin: string; barber?: string };
+type Person = { key: string; name: string; phone?: string; email?: string; pin: string; barber?: string; role?: string };
 const PEOPLE: Person[] = [
   { key: "admin", name: "Jasiri Admin", phone: "+254700000001", pin: "111111" },
-  { key: "juma", name: "Juma Otieno", phone: "+254711000001", pin: "123456", barber: "juma" },
+  { key: "juma", name: "Juma Otieno", phone: "+254711000001", pin: "123456", barber: "juma", role: "manager" },
   { key: "brian", name: "Brian Kamau", phone: "+254711000002", pin: "123456", barber: "brian" },
   { key: "kevin", name: "Kevin Mwangi", phone: "+254711000003", pin: "123456", barber: "kevo" },
-  { key: "mary", name: "Mary Wanjiru", phone: "+254722000001", pin: "123456" },
-  { key: "grace", name: "Grace Achieng", phone: "+254722000002", pin: "123456" },
-  { key: "cashier", name: "Cashier Kinyozi Bora", email: "cashier@kinyozibora.test", pin: "222222" },
+  { key: "mary", name: "Mary Wanjiru", phone: "+254722000001", pin: "123456", role: "service_staff" },
+  { key: "grace", name: "Grace Achieng", phone: "+254722000002", pin: "123456", role: "service_staff" },
+  { key: "cashier", name: "Cashier Kinyozi Bora", email: "cashier@kinyozibora.test", pin: "222222", role: "cashier" },
 ];
 
 async function createUser(p: Person): Promise<string> {
   const loginEmail = p.phone ? `${p.phone.slice(1)}@phone.jasiri.app` : p.email!;
   const { data, error } = await admin.auth.admin.createUser({
     email: loginEmail, password: p.pin, email_confirm: true,
-    user_metadata: { full_name: p.name, phone: p.phone ?? null, contact_email: p.email ?? null, is_barber: !!p.barber, handle: p.barber ?? null },
+    user_metadata: { full_name: p.name, phone: p.phone ?? null, contact_email: p.email ?? null, is_barber: !!p.barber, handle: p.barber ?? null, signup_role: p.role ?? (p.barber ? "barber" : null) },
   });
   if (error) throw new Error(`${p.name}: ${error.message}`);
   return data.user.id;

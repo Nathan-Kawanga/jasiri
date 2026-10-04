@@ -8,7 +8,7 @@ import { Badge, Button, Card, Field, Input } from "@/components/ui";
 import { ErrorNote } from "@/components/error-note";
 import { CopyButton } from "@/components/copy-button";
 
-export type Member = { id: string; user_id: string; status: "pending" | "active"; roles: Role[]; name: string; is_barber: boolean };
+export type Member = { id: string; user_id: string; status: "pending" | "active"; roles: Role[]; name: string; is_barber: boolean; signup_role: Role | null };
 const ROLES: Role[] = ["barber", "service_staff", "cashier", "manager"];
 
 function RolePicker({ value, onChange }: { value: Role[]; onChange: (r: Role[]) => void }) {
@@ -26,7 +26,7 @@ function RolePicker({ value, onChange }: { value: Role[]; onChange: (r: Role[]) 
 }
 
 function MemberCard({ m, me }: { m: Member; me: string }) {
-  const [roles, setRoles] = useState<Role[]>(m.status === "pending" ? (m.is_barber ? ["barber"] : []) : m.roles);
+  const [roles, setRoles] = useState<Role[]>(m.status === "pending" ? (m.signup_role ? [m.signup_role] : m.is_barber ? ["barber"] : []) : m.roles);
   const { run, pending, error } = useAct();
   const router = useRouter();
   const go = async (fn: string, args: Record<string, unknown>) => {
@@ -38,8 +38,11 @@ function MemberCard({ m, me }: { m: Member; me: string }) {
     <Card className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="text-lg font-bold">{m.name}{m.user_id === me ? " (you)" : ""}</div>
-        {m.status === "pending" ? <Badge tone="amber">{s.shop.requests}</Badge> : null}
+        {m.status === "pending" ? <Badge tone="amber">{s.shop.wantsToJoin}</Badge> : null}
       </div>
+      {m.status === "pending" && m.signup_role ? (
+        <div className="-mt-2 text-sm text-muted">{s.shop.signedUpAs}: <b className="text-ink">{s.shop.role[m.signup_role]}</b></div>
+      ) : null}
       <ErrorNote code={error} />
       <RolePicker value={roles} onChange={setRoles} />
       {m.status === "pending" ? (

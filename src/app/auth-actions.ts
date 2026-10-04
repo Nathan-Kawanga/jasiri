@@ -47,7 +47,10 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   const mode = form.get("mode") === "email" ? "email" : "phone";
   const pin = String(form.get("pin") ?? "");
   const pin2 = String(form.get("pin2") ?? "");
-  const isBarber = mode === "phone" && form.get("is_barber") === "on";
+  const role = String(form.get("role") ?? "");
+  if (!["barber", "service_staff", "cashier", "manager"].includes(role)) return { error: "pick_a_role" };
+  const isBarber = role === "barber";
+  if (isBarber && mode !== "phone") return { error: "invalid_phone" };
   const handle = String(form.get("handle") ?? "").trim().toLowerCase();
 
   if (fullName.length < 2) return { error: "name_required" };
@@ -89,7 +92,7 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
     email: loginEmail,
     password: pin,
     email_confirm: true,
-    user_metadata: { full_name: fullName, phone, contact_email: contactEmail, is_barber: isBarber, handle: isBarber ? handle : null },
+    user_metadata: { full_name: fullName, phone, contact_email: contactEmail, is_barber: isBarber, handle: isBarber ? handle : null, signup_role: role },
   });
   if (error) {
     return { error: /already|registered|exists/i.test(error.message) ? (phone ? "phone_taken" : "email_taken") : "generic" };
@@ -98,7 +101,10 @@ export async function signUp(_: FormState, form: FormData): Promise<FormState> {
   const supabase = await serverClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({ email: loginEmail, password: pin });
   if (signInError) return { error: "generic" };
-  redirect(nextPath(form));
+  const next = nextPath(form);
+  // Send each person to their first step: managers set up a shop, staff join one.
+  if (next !== "/") redirect(next);
+  redirect(role === "manager" ? "/shop/new?welcome=1" : role === "barber" ? "/" : "/shop/join?welcome=1");
 }
 
 export async function signOut() {
