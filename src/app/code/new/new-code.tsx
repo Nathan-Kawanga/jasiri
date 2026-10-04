@@ -5,7 +5,7 @@ import { s } from "@/lib/strings";
 import { read } from "@/lib/action";
 import { useAct } from "@/lib/use-act";
 import { normalizePhone } from "@/lib/phone";
-import { Button, Card, Field, Input } from "@/components/ui";
+import { Button, Card, Field, Input, Notice } from "@/components/ui";
 import { ErrorNote } from "@/components/error-note";
 
 export type Preselected = { bookingId: string; firstName: string };
@@ -35,7 +35,9 @@ export function NewCode({ shopId, barberName, preselected }: { shopId: string; b
 
   if (!who) {
     if (mode === "search") return <ClientSearch onPick={(c) => setWho({ kind: "returning", client: c })} onBack={() => setMode("pick")} />;
-    if (mode === "new") return <NewClientForm barberName={barberName} onDone={(firstName, phone) => setWho({ kind: "new", firstName, phone })} onBack={() => setMode("pick")} />;
+    if (mode === "new") return <NewClientForm shopId={shopId} barberName={barberName}
+      onDone={(firstName, phone) => setWho({ kind: "new", firstName, phone })}
+      onMine={(c) => setWho({ kind: "returning", client: c })} onBack={() => setMode("pick")} />;
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-bold">{s.code.whoIsClient}</h2>
@@ -79,7 +81,7 @@ function ClientSearch({ onPick, onBack }: { onPick: (c: Client) => void; onBack:
   return (
     <div className="space-y-3">
       <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={s.code.searchClients} autoFocus />
-      {list === null ? <p className="text-muted">{s.app.loading}</p> : list.length === 0 ? <p className="text-muted">{s.app.none}</p> : null}
+      {list === null ? <p className="text-muted">{s.app.loading}</p> : list.length === 0 ? <p className="text-muted">{s.code.notInBook}</p> : null}
       {list?.map((c) => (
         <button key={c.id} onClick={() => onPick(c)}
                 className="flex min-h-14 w-full items-center justify-between rounded-xl border border-line bg-surface px-4 text-left">
@@ -92,30 +94,67 @@ function ClientSearch({ onPick, onBack }: { onPick: (c: Client) => void; onBack:
   );
 }
 
-// Filled in by the client himself on the barber's phone.
-function NewClientForm({ barberName, onDone, onBack }: { barberName: string; onDone: (n: string, p: string) => void; onBack: () => void }) {
-  const [name, setName] = useState("");
+// Filled in by the client himself on the barber's phone. Phone number first: if he was
+// served in this shop before (by any barber), his first name is filled in for him.
+function NewClientForm({ shopId, barberName, onDone, onMine, onBack }: {
+  shopId: string; barberName: string;
+  onDone: (n: string, p: string) => void; onMine: (c: Client) => void; onBack: () => void;
+}) {
   const [phone, setPhone] = useState("");
+  const [checked, setChecked] = useState<null | "new" | "shop">(null);
+  const [checking, setChecking] = useState(false);
+  const [name, setName] = useState("");
   const [consent, setConsent] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  async function check(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    const p = normalizePhone(phone);
+    if (!p) return setErr("invalid_phone");
+    setChecking(true);
+    try {
+      const r = await read<{ status: "mine" | "shop" | "new"; client_id?: string; first_name?: string }>(
+        "shop_client_lookup", { p_shop: shopId, p_phone: p });
+      if (r.status === "mine") return onMine({ id: r.client_id!, first_name: r.first_name!, phone: p, visits: 0, due: false });
+      setName(r.first_name ?? "");
+      setChecked(r.status);
+    } catch (e) {
+      setErr((e as { code?: string }).code ?? "generic");
+    } finally {
+      setChecking(false);
+    }
+  }
+
   return (
-    <form className="space-y-4" onSubmit={(e) => {
-      e.preventDefault();
-      const p = normalizePhone(phone);
-      if (!p) return setErr("invalid_phone");
-      if (!consent) return setErr("consent_required");
-      onDone(name.trim(), p);
-    }}>
-      <p className="rounded-xl bg-brand-soft p-3 font-semibold text-brand-dark">{s.code.handPhone}</p>
+    <div className="space-y-4">
+      <p className="rounded-2xl bg-brand-soft p-3 font-semibold text-amber-100">{s.code.handPhone}</p>
       <ErrorNote code={err} />
-      <Field label={s.code.clientFirstName}><Input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="given-name" /></Field>
-      <Field label={s.code.clientPhone}><Input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" required placeholder="0712 345 678" /></Field>
-      <label className="flex items-start gap-3 rounded-xl border border-line bg-surface p-3">
-        <input type="checkbox" className="mt-1 size-6 shrink-0 accent-brand" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        <span className="text-base">{s.code.consent(barberName)}</span>
-      </label>
-      <Button className="w-full">{s.booking.next}</Button>
+      {checked === null ? (
+        <form className="space-y-4" onSubmit={check}>
+          <p className="text-sm text-muted">{s.code.phoneFirst}</p>
+          <Field label={s.code.clientPhone}>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" required autoFocus placeholder="0712 345 678" />
+          </Field>
+          <Button className="w-full" disabled={checking}>{checking ? s.code.checking : s.booking.next}</Button>
+        </form>
+      ) : (
+        <form className="space-y-4" onSubmit={(e) => {
+          e.preventDefault();
+          if (!consent) return setErr("consent_required");
+          if (!name.trim()) return setErr("name_required");
+          onDone(name.trim(), normalizePhone(phone)!);
+        }}>
+          {checked === "shop" ? <Notice tone="ok">{s.code.servedBefore(name)}</Notice> : null}
+          <Field label={s.code.clientFirstName}><Input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="given-name" /></Field>
+          <label className="flex items-start gap-3 rounded-2xl border border-line bg-surface-2 p-3">
+            <input type="checkbox" className="mt-1 size-6 shrink-0 accent-brand" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+            <span className="text-base">{s.code.consent(barberName)}</span>
+          </label>
+          <Button className="w-full">{s.booking.next}</Button>
+        </form>
+      )}
       <Button type="button" variant="ghost" onClick={onBack}>{s.app.back}</Button>
-    </form>
+    </div>
   );
 }
