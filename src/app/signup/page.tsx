@@ -8,7 +8,7 @@ export default async function SignupPage({ searchParams }: PageProps<"/signup">)
   return (
     <main className="mesh min-h-dvh">
       <div className="mx-auto w-full max-w-sm px-4 py-8">
-        <AuthHero compact />
+        <AuthHero />
         <div className="rounded-3xl border border-line bg-surface/80 p-5 backdrop-blur">
           <h1 className="mb-4 text-2xl font-bold">{s.auth.signUpTitle}</h1>
           <SignupForm siteUrl={site} next={typeof next === "string" ? next : "/"} />

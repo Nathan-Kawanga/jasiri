@@ -66,7 +66,7 @@ export function Page({ title, back = "/", children, actions }: {
           <h1 className="flex-1 truncate text-2xl font-bold">{title}</h1>
           {actions}
         </div>
-        <div className="pole h-1 opacity-80" />
+        <div className="h-px bg-line" />
       </header>
       {children}
     </div>

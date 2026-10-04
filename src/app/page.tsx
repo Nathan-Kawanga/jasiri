@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { requireContext } from "@/lib/context";
+import { redirect } from "next/navigation";
+import { getContext } from "@/lib/context";
+import { serviceClient } from "@/lib/supabase/server";
+import { Landing } from "./landing";
 import { s } from "@/lib/strings";
 import { dayLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/photos";
@@ -7,23 +10,14 @@ import { Notice } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
 import { switchShop } from "./shop-actions";
 
-const tones = {
-  gold: "from-amber-400/25 to-amber-400/0 text-amber-300",
-  hot: "from-rose-500/25 to-rose-500/0 text-rose-300",
-  cool: "from-sky-400/25 to-sky-400/0 text-sky-300",
-  violet: "from-violet-400/25 to-violet-400/0 text-violet-300",
-  lime: "from-lime-400/25 to-lime-400/0 text-lime-300",
-  teal: "from-teal-400/25 to-teal-400/0 text-teal-300",
-};
 
-function Tile({ href, label, icon, tone }: { href: string; label: string; icon: IconName; tone: keyof typeof tones }) {
+function Tile({ href, label, icon }: { href: string; label: string; icon: IconName }) {
   return (
-    <Link href={href} className="group relative flex min-h-28 flex-col justify-between overflow-hidden rounded-3xl border border-line bg-surface p-4 active:scale-[0.97]">
-      <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${tones[tone]} opacity-60`} />
-      <span className={`relative inline-flex size-11 items-center justify-center rounded-2xl bg-black/30 ${tones[tone].split(" ").pop()}`}>
+    <Link href={href} className="flex min-h-28 flex-col justify-between rounded-3xl border border-line bg-surface p-4 transition hover:border-brand/40 active:scale-[0.97]">
+      <span className="inline-flex size-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
         <Icon name={icon} />
       </span>
-      <span className="relative mt-3 text-base font-bold leading-tight">{label}</span>
+      <span className="mt-3 text-base font-bold leading-tight">{label}</span>
     </Link>
   );
 }
@@ -38,8 +32,7 @@ function HeroTile({ href, label, hint, icon }: { href: string; label: string; hi
       <span className="inline-flex size-16 items-center justify-center rounded-full bg-black/85 text-brand">
         <Icon name={icon} size={30} />
       </span>
-      <div className="pole absolute bottom-0 left-0 h-1.5 w-full opacity-70" />
-    </Link>
+          </Link>
   );
 }
 
@@ -49,7 +42,13 @@ function greeting() {
 }
 
 export default async function Home() {
-  const { profile, shops, usableShops, current, roles } = await requireContext();
+  const ctx = await getContext();
+  if (!ctx) {
+    const { data } = await serviceClient().from("app_settings").select("value").eq("key", "monthly_price_kes").maybeSingle();
+    return <Landing price={data?.value ?? "200"} />;
+  }
+  if (ctx.profile.suspended) redirect("/suspended");
+  const { profile, shops, usableShops, current, roles } = ctx;
   const has = (r: string) => roles.includes(r as never);
   const pending = shops.filter((m) => m.status === "pending");
   const first = profile.full_name.split(" ")[0];
@@ -69,7 +68,7 @@ export default async function Home() {
 
         <section className="mb-5">
           <p className="text-muted">{greeting()},</p>
-          <h1 className="font-display text-4xl font-extrabold leading-tight">{first} <span className="inline-block">✂️</span></h1>
+          <h1 className="font-display text-4xl font-extrabold leading-tight">{first}</h1>
         </section>
 
         {profile.subscription === "due" ? (
@@ -110,31 +109,31 @@ export default async function Home() {
           {current && has("barber") ? <HeroTile href="/code/new" label={s.home.newCode} hint={s.home.newCodeHint} icon="scissors" /> : null}
           {current && has("service_staff") && !has("barber") ? <HeroTile href="/queue" label={s.home.queue} hint={s.home.queueHint} icon="sparkles" /> : null}
           {current && has("cashier") && !has("barber") && !has("service_staff") ? <HeroTile href="/cashier" label={s.home.cashier} hint={s.home.cashierHint} icon="cash" /> : null}
-          {current && has("service_staff") && has("barber") ? <Tile href="/queue" label={s.home.queue} icon="sparkles" tone="hot" /> : null}
-          {current && has("cashier") && (has("barber") || has("service_staff")) ? <Tile href="/cashier" label={s.home.cashier} icon="cash" tone="lime" /> : null}
+          {current && has("service_staff") && has("barber") ? <Tile href="/queue" label={s.home.queue} icon="sparkles" /> : null}
+          {current && has("cashier") && (has("barber") || has("service_staff")) ? <Tile href="/cashier" label={s.home.cashier} icon="cash" /> : null}
           {profile.is_barber ? <>
-            <Tile href="/day" label={s.home.myDay} icon="calendar" tone="cool" />
-            <Tile href="/clients" label={s.home.clientBook} icon="book" tone="violet" />
+            <Tile href="/day" label={s.home.myDay} icon="calendar" />
+            <Tile href="/clients" label={s.home.clientBook} icon="book" />
           </> : null}
-          {profile.is_barber || has("service_staff") || has("barber") ? <Tile href="/earnings" label={s.home.earnings} icon="wallet" tone="gold" /> : null}
+          {profile.is_barber || has("service_staff") || has("barber") ? <Tile href="/earnings" label={s.home.earnings} icon="wallet" /> : null}
           {profile.is_barber ? <>
-            <Tile href="/photos" label={s.home.myCuts} icon="image" tone="hot" />
-            <Tile href="/share" label={s.home.bookingLink} icon="link" tone="teal" />
-            <Tile href="/availability" label={s.home.availability} icon="clock" tone="cool" />
+            <Tile href="/photos" label={s.home.myCuts} icon="image" />
+            <Tile href="/share" label={s.home.bookingLink} icon="link" />
+            <Tile href="/availability" label={s.home.availability} icon="clock" />
           </> : null}
           {current && (has("cashier") || has("manager")) ? <>
-            <Tile href="/shop/payout" label={s.home.payout} icon="list" tone="lime" />
-            <Tile href="/shop/summary" label={s.home.summary} icon="chart" tone="gold" />
+            <Tile href="/shop/payout" label={s.home.payout} icon="list" />
+            <Tile href="/shop/summary" label={s.home.summary} icon="chart" />
           </> : null}
           {current && has("manager") ? <>
-            <Tile href="/shop/manage" label={s.home.manage} icon="users" tone="violet" />
-            <Tile href="/shop/flags" label={s.home.flags} icon="flag" tone="hot" />
-            <Tile href="/shop/usage" label={s.home.usage} icon="chart" tone="cool" />
-            <Tile href="/shop/problems" label={s.home.problems} icon="alert" tone="gold" />
-            <Tile href="/shop/audit" label={s.home.audit} icon="shield" tone="teal" />
+            <Tile href="/shop/manage" label={s.home.manage} icon="users" />
+            <Tile href="/shop/flags" label={s.home.flags} icon="flag" />
+            <Tile href="/shop/usage" label={s.home.usage} icon="chart" />
+            <Tile href="/shop/problems" label={s.home.problems} icon="alert" />
+            <Tile href="/shop/audit" label={s.home.audit} icon="shield" />
           </> : null}
-          {profile.is_platform_admin ? <Tile href="/admin" label={s.home.admin} icon="shield" tone="violet" /> : null}
-          <Tile href="/guide" label={s.home.guide} icon="help" tone="teal" />
+          {profile.is_platform_admin ? <Tile href="/admin" label={s.home.admin} icon="shield" /> : null}
+          <Tile href="/guide" label={s.home.guide} icon="help" />
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3 text-sm">

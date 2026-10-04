@@ -7,7 +7,7 @@
   --color-line: #2c2c38;
   --color-ink: #f6f6f8;
   --color-muted: #a3a3b2;
-  --color-brand: #ffb21e;
+  --color-brand: #f5a915;
   --color-brand-dark: #f59e0b;
   --color-brand-soft: #2a220f;
   --color-hot: #ff4d6d;
@@ -46,26 +46,22 @@ body {
     background: repeating-linear-gradient(-45deg, #ff3b4e 0 10px, #ffffff 10px 20px, #2f6bff 20px 30px, #ffffff 30px 40px);
   }
   .gold-text {
-    background: linear-gradient(100deg, #ffe08a, #ffb21e 45%, #ff7a45);
+    background: linear-gradient(180deg, #ffd27a, #f5a915);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
   .gold-grad {
-    background: linear-gradient(135deg, #ffd166 0%, #ffb21e 45%, #ff7a45 100%);
+    background: linear-gradient(180deg, #ffc44d 0%, #f5a915 100%);
   }
   .glow {
-    text-shadow: 0 0 24px rgba(255, 178, 30, 0.55), 0 0 2px rgba(255, 178, 30, 0.8);
+    text-shadow: 0 0 18px rgba(245, 169, 21, 0.35);
   }
   .mesh {
-    background:
-      radial-gradient(60% 50% at 10% 0%, rgba(255, 178, 30, 0.22), transparent 70%),
-      radial-gradient(50% 40% at 100% 10%, rgba(255, 77, 109, 0.20), transparent 70%),
-      radial-gradient(60% 50% at 50% 100%, rgba(56, 189, 248, 0.14), transparent 70%),
-      var(--color-paper);
+    background: radial-gradient(70% 45% at 50% 0%, rgba(245, 169, 21, 0.12), transparent 70%), var(--color-paper);
   }
   .shine {
-    box-shadow: 0 10px 30px -10px rgba(255, 178, 30, 0.55);
+    box-shadow: 0 8px 24px -12px rgba(245, 169, 21, 0.5);
   }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { scrollbar-width: none; }

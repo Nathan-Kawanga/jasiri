@@ -45,8 +45,7 @@ export default async function PublicBarberPage({ params }: PageProps<"/b/[handle
           <img src={cover} alt="" className="size-full scale-110 object-cover opacity-60 blur-[2px]" />
         ) : <div className="mesh size-full" />}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-paper/40 to-paper" />
-        <div className="pole absolute top-0 h-1.5 w-full" />
-      </div>
+              </div>
 
       <div className="relative mx-auto -mt-20 w-full max-w-md px-4 pb-16">
         <div className="mb-3 size-28 overflow-hidden rounded-full border-4 border-paper bg-surface-2 shadow-xl ring-2 ring-brand">

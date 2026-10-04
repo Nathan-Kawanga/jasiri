@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC = [/^\/login/, /^\/signup/, /^\/b\//, /^\/suspended/, /^\/guide/];
+const PUBLIC = [/^\/$/, /^\/login/, /^\/signup/, /^\/b\//, /^\/suspended/, /^\/guide/];
 const SESSION_DAYS = 30;
 
 // Refreshes the session cookie on every request, sends signed-out people to /login,

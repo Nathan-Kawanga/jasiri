@@ -53,6 +53,8 @@ for (const name of Object.keys(users)) {
   const ctx = await browser.newContext({ viewport: { width: 360, height: 740 }, isMobile: true });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => problems.push(`public pageerror: ${e.message}`));
+  await visit(page, "public", "/");
+  if (!(await page.getByRole("link", { name: "Sign in" }).first().isVisible())) problems.push("landing page has no Sign in link");
   await visit(page, "public", "/b/brian");
   await visit(page, "public", "/signup");
   await visit(page, "public", "/guide/barber");
