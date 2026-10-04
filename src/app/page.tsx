@@ -9,6 +9,7 @@ import { photoUrl } from "@/lib/photos";
 import { Notice } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
 import { switchShop } from "./shop-actions";
+import { signOut } from "./auth-actions";
 
 
 function Tile({ href, label, icon }: { href: string; label: string; icon: IconName }) {
@@ -59,11 +60,18 @@ export default async function Home() {
       <div className="mx-auto w-full max-w-xl px-4 pb-20 pt-5">
         <header className="mb-5 flex items-center justify-between">
           <div className="font-display text-2xl font-extrabold"><span className="gold-text">Jasiri</span></div>
-          <Link href="/account" aria-label={s.home.account}
-            className="inline-flex size-12 items-center justify-center overflow-hidden rounded-full border border-line bg-surface">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {avatar ? <img src={avatar} alt="" className="size-full object-cover" /> : <Icon name="user" />}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/account" aria-label={s.home.account}
+              className="inline-flex size-12 items-center justify-center overflow-hidden rounded-full border border-line bg-surface">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {avatar ? <img src={avatar} alt="" className="size-full object-cover" /> : <Icon name="user" />}
+            </Link>
+            <form action={signOut}>
+              <button className="inline-flex min-h-12 items-center gap-1.5 rounded-full border border-line bg-surface px-4 text-sm font-semibold text-muted hover:text-ink">
+                <Icon name="logout" size={18} />{s.app.signOut}
+              </button>
+            </form>
+          </div>
         </header>
 
         <section className="mb-5">
