@@ -14,8 +14,13 @@ export type JoinRequest = {
 
 // Shown to everyone who works in the shop. Two coworkers must confirm a new person
 // (one while the shop has a single member); owner/manager requests go to the manager.
-export function JoinRequests({ shopId, initial, initialError }: { shopId: string; initial: JoinRequest[]; initialError?: string | null }) {
-  const [list, setList] = useState(initial);
+// With hideVoted (the home screen), a request leaves your list once you've answered it;
+// Shop admin still shows it so a manager can see progress or change their answer.
+export function JoinRequests({ shopId, initial, initialError, hideVoted = false }: {
+  shopId: string; initial: JoinRequest[]; initialError?: string | null; hideVoted?: boolean;
+}) {
+  const [all, setList] = useState(initial);
+  const list = hideVoted ? all.filter((r) => r.my_vote === null || r.my_vote === undefined) : all;
   const [loadError, setLoadError] = useState<string | null>(initialError ?? null);
   const { run, pending, error } = useAct();
   const router = useRouter();
