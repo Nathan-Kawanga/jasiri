@@ -50,11 +50,11 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   return <div className={`rounded-3xl border border-line bg-surface p-4 ${className}`}>{children}</div>;
 }
 
-export function Page({ title, back = "/", children, actions }: {
-  title: string; back?: string | null; children: ReactNode; actions?: ReactNode;
+export function Page({ title, back = "/", children, actions, wide = false }: {
+  title: string; back?: string | null; children: ReactNode; actions?: ReactNode; wide?: boolean;
 }) {
   return (
-    <div className="mx-auto w-full max-w-xl px-4 pb-20">
+    <div className={`mx-auto w-full ${wide ? "max-w-4xl" : "max-w-xl"} px-4 pb-20`}>
       <header className="no-print sticky top-0 z-10 -mx-4 mb-5 bg-paper/85 backdrop-blur-md">
         <div className="flex min-h-16 items-center gap-2 px-4">
           {back !== null ? (

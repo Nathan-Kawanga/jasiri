@@ -91,6 +91,13 @@ describe("code chain rules", () => {
     const barberRow = sheet.rows.find((r: any) => r.user_id === s.barber.id);
     expect(barberRow.paid_amount).toBe(400);
     expect(barberRow.open_count).toBe(1);
+
+    // Per-code sheet: only the paid code, followed from barber to service staff.
+    const tickets = await read(s.cashier, "payout_tickets", { p_shop: s.id, p_day: today });
+    expect(tickets).toHaveLength(1);
+    expect(tickets[0]).toMatchObject({ barber: s.barber.name, barber_amount: 400, amount_paid: 500,
+      lines: [{ name: s.staff.name, amount: 100, note: "wash" }] });
+    expect(await errorOf(read(s.barber, "payout_tickets", { p_shop: s.id, p_day: today }))).toBe("not_allowed");
   });
 
   it("6. amounts are fixed once the client confirms; later edits never rewrite a code", async () => {

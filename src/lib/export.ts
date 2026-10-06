@@ -40,7 +40,9 @@ export async function toPdf(t: Table): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  const W = 595, H = 842, M = 36, size = 9, rowH = 15;
+  // Wide tables print on landscape A4.
+  const [W, H] = t.headers.length > 6 ? [842, 595] : [595, 842];
+  const M = 36, size = 9, rowH = 15;
   const colW = (W - 2 * M) / t.headers.length;
   let page = doc.addPage([W, H]);
   let y = H - M;

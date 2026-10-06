@@ -24,7 +24,8 @@ Read this, then `CLAUDE.md` and `README.md`, before changing anything.
 ## Hosted database status (as of the end of the cloud session)
 Applied: setup-all (initial), update 2 (photos), update 4 (lookup limits), update 8
 (repair = updates 5, 6, 7). **Confirm with Nathan that he ran update 9 (services and
-prices) and update 10 (barber-first: a barber who adds a shop stays a barber).**
+prices), update 10 (barber-first: a barber who adds a shop stays a barber) and update 11
+(payout sheet per code).**
 
 ## Decisions made with Nathan (don't undo without asking)
 - No price list or commission shares. Staff type what they charged; cashier types what
@@ -49,6 +50,9 @@ prices) and update 10 (barber-first: a barber who adds a shop stays a barber).**
 - Landing page for signed-out visitors; Sign in top right; contact details are placeholders
   in `src/lib/site.ts`; stats are true product facts, never invented traction.
 - Look: dark, single gold accent. Don't add more colours.
+- Payout sheet: one row per paid code, barber side then service staff side (Nathan's layout),
+  with "Totals per person" underneath. Exports keep the barber amount on a code's first row
+  only so columns add up. Falls back to rebuilding codes from payout_sheet before update 11.
 - Marketplace (find barbers near you) is a later phase; current design was kept compatible.
 
 ## Pilot

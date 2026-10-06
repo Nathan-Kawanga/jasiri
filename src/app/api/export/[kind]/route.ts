@@ -4,6 +4,7 @@ import { respond, type Format, type Table } from "@/lib/export";
 import { s } from "@/lib/strings";
 import { displayPhone } from "@/lib/phone";
 import { nairobiToday, dateTime, time } from "@/lib/format";
+import { ticketsFromPeople, type PersonRow, type Ticket } from "@/lib/payout";
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -49,14 +50,28 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/export/[kind
     name = "jasiri-client-book";
   } else if (kind === "payout") {
     const shop = q.get("shop") ?? "";
-    const { data, error } = await supabase.rpc("payout_sheet", { p_shop: shop, p_day: from });
+    const [{ data, error }, tix] = await Promise.all([
+      supabase.rpc("payout_sheet", { p_shop: shop, p_day: from }),
+      supabase.rpc("payout_tickets", { p_shop: shop, p_day: from }),
+    ]);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    const rows = (data as { rows: { name: string; role: string; paid_count: number; paid_amount: number; open_count: number; codes: { code: string }[] }[] }).rows;
+    const people = (data as { rows: PersonRow[] }).rows;
+    const tickets = tix.error ? ticketsFromPeople(people) : (tix.data as Ticket[]);
+    // One row per piece of service work. The barber's amount sits on the code's first
+    // row only, so the columns add up; the code repeats so it can be filtered on.
+    const rows: (string | number)[][] = tickets.flatMap((t) => (t.lines.length ? t.lines : [null]).map((l, i) => [
+      i === 0 ? t.barber ?? "" : "", i === 0 && t.barber ? s.earnings.asBarber : "", i === 0 && t.barber ? t.barber_amount : "", t.code,
+      l?.name ?? "", l ? l.note || s.earnings.asService : "", l?.amount ?? "", l ? t.code : "",
+      i === 0 && t.amount_paid !== null ? t.amount_paid : "",
+    ]));
+    const sum = (f: (t: Ticket) => number) => tickets.reduce((a, t) => a + f(t), 0);
+    rows.push(["Total", "", sum((t) => t.barber_amount), tickets.length, "", "", sum((t) => t.lines.reduce((a, l) => a + l.amount, 0)), "", sum((t) => t.amount_paid ?? 0)]);
+    rows.push([], [s.manager.perPerson], [s.manager.person, s.manager.work, s.manager.paidCodes, s.manager.earned + " (KES)", s.manager.openCodes]);
+    for (const r of people) rows.push([r.name, r.role === "barber" ? s.earnings.asBarber : s.earnings.asService, r.paid_count, r.paid_amount, r.open_count]);
     table = {
       title: `${s.manager.payoutTitle} - ${from}`,
-      headers: [s.manager.person, "Work", s.manager.paidCodes, s.manager.earned + " (KES)", s.manager.openCodes, "Codes"],
-      rows: rows.map((r) => [r.name, r.role === "barber" ? s.earnings.asBarber : s.earnings.asService, r.paid_count, r.paid_amount, r.open_count, r.codes.map((c) => c.code).join(" ")]),
-      footer: ["Total", "", rows.reduce((a, r) => a + r.paid_count, 0), rows.reduce((a, r) => a + r.paid_amount, 0), "", ""],
+      headers: ["Barber", s.manager.work, "Amount (KES)", s.manager.paidCode, s.manager.serviceStaff, s.manager.work, "Amount (KES)", s.manager.paidCode, "Client paid (KES)"],
+      rows,
     };
     name = `jasiri-payout-${from}`;
   } else if (kind === "usage") {
