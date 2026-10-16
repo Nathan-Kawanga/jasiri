@@ -23,9 +23,9 @@ Read this, then `CLAUDE.md` and `README.md`, before changing anything.
 
 ## Hosted database status (as of the end of the cloud session)
 Applied: setup-all (initial), update 2 (photos), update 4 (lookup limits), update 8
-(repair = updates 5, 6, 7). **Confirm with Nathan that he ran update 9 (services and
-prices), update 10 (barber-first: a barber who adds a shop stays a barber), update 11
-(payout sheet per code) and update 12 (service staff go on duty by working).**
+(repair = updates 5, 6, 7). Nathan believes updates 9-12 are applied (2026-10-16). Once he
+ran update 12 in a different Supabase project by mistake ("schema private does not exist"):
+that error always means the wrong project, not a broken update.
 
 ## Decisions made with Nathan (don't undo without asking)
 - No price list or commission shares. Staff type what they charged; cashier types what
