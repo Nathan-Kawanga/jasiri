@@ -35,7 +35,12 @@ export function CodeConfirm({ code }: { code: CodeView }) {
         {big}
         <ErrorNote code={error} />
         <button disabled={pending}
-          onClick={async () => { const r = await run<Result>("confirm_code", { p_code: code.id }); if (r) setState(r); }}
+          onClick={async () => {
+            const r = await run<Result>("confirm_code", { p_code: code.id });
+            if (!r) return;
+            // Service-only code: straight to my queue with it open, ready to add services.
+            if (serviceOnly) router.replace(`/queue?open=${code.id}`); else setState(r);
+          }}
           className="pulse-ring shine mt-4 min-h-24 w-full rounded-3xl gold-grad font-display text-3xl font-extrabold text-black active:scale-[0.98] disabled:opacity-60">
           {s.code.confirmMyCode}
         </button>

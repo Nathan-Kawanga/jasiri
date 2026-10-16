@@ -187,6 +187,15 @@ describe("code chain rules", () => {
     const c2 = await openCode(s);
     const [r2] = await sql("select assigned_staff_id from public.codes where id = $1", [c2]);
     expect(r2.assigned_staff_id).toBeNull();
+
+    // Taking that code puts her back on duty without a button, so the next code comes to her.
+    await call(s.staff, "take_code", { p_code: c2 });
+    expect((await read(s.staff, "service_queue", { p_shop: s.id })).on_duty).toBe(true);
+    const c3 = await openCode(s);
+    const [r3] = await sql("select assigned_staff_id from public.codes where id = $1", [c3]);
+    expect(r3.assigned_staff_id).toBe(s.staff.id);
+    const [log] = await sql("select count(*)::int as n from public.audit_log where action = 'membership.auto_on_duty' and actor_id = $1", [s.staff.id]);
+    expect(log.n).toBe(1);
   });
 
   it("only the barber can cancel, and only before the client confirms", async () => {

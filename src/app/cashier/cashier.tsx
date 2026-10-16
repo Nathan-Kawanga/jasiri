@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { s } from "@/lib/strings";
 import { kes, time, nairobiToday, dayLabel } from "@/lib/format";
 import { useAct } from "@/lib/use-act";
@@ -7,6 +7,8 @@ import { useLive } from "@/lib/use-live";
 import { Badge, Button, Card, Field, Input, Notice, Empty, inputClass } from "@/components/ui";
 import { ErrorNote } from "@/components/error-note";
 import { Icon } from "@/components/icons";
+import { Sheet } from "@/components/sheet";
+import { useArrivals } from "@/lib/use-arrivals";
 
 export type CCode = {
   id: string; display_code: string; status: "open" | "paid" | "voided"; service_status: string;
@@ -18,28 +20,35 @@ export type CCode = {
 export function Cashier({ shopId, initial }: { shopId: string; initial: CCode[] }) {
   const { data, reload } = useLive<CCode[]>("cashier_codes", { p_shop: shopId }, shopId, initial);
   const [q, setQ] = useState("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  // A snapshot of the code being paid: the panel stays up through its "Paid" screen even
+  // after the live list has already moved the code to Paid today.
+  const [current, setCurrent] = useState<CCode | null>(null);
+  const close = useCallback(() => { setCurrent(null); reload(); }, [reload]);
   const match = (c: CCode) => !q || c.display_code.includes(q.toUpperCase()) || (c.client_first_name ?? "").toLowerCase().includes(q.toLowerCase());
-  const open = data.filter((c) => c.status === "open" && match(c));
+  // Next to pay on top: service finished first, then whoever has waited longest.
+  const finished = (c: CCode) => (c.service_status === "done" || c.service_status === "no_service" ? 0 : 1);
+  const open = data.filter((c) => c.status === "open" && match(c))
+    .sort((a, b) => finished(a) - finished(b) || (a.confirmed_at ?? "").localeCompare(b.confirmed_at ?? ""));
+  const fresh = useArrivals(data.filter((c) => c.status === "open").map((c) => c.id));
   const paid = data.filter((c) => c.status === "paid" && match(c));
   const voided = data.filter((c) => c.status === "voided" && match(c));
-  const current = data.find((c) => c.id === openId);
   const today = nairobiToday();
-
-  if (current && current.status === "open") {
-    return <PayPanel code={current} onClose={() => { setOpenId(null); reload(); }} />;
-  }
 
   return (
     <div className="space-y-5">
+      {current ? <Sheet><PayPanel code={current} onClose={close} /></Sheet> : null}
       <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={s.cashier.find} autoCapitalize="characters" />
       <section className="space-y-2">
         <h2 className="text-lg font-bold">{s.cashier.ready} ({open.length})</h2>
         {open.length === 0 ? <Empty>{s.app.none}</Empty> : null}
         {open.map((c) => (
-          <button key={c.id} onClick={() => setOpenId(c.id)} className="block w-full rounded-3xl border border-line bg-surface p-4 text-left active:scale-[0.99] hover:border-brand/50">
+          <button key={c.id} onClick={() => setCurrent(c)}
+            className={`block w-full rounded-3xl border bg-surface p-4 text-left active:scale-[0.99] hover:border-brand/50 ${fresh.includes(c.id) ? "border-brand ring-2 ring-brand/60" : "border-line"}`}>
             <div className="flex items-center justify-between">
-              <span className="font-mono text-3xl font-black tracking-widest text-brand">{c.display_code}</span>
+              <span className="flex items-center gap-2">
+                <span className="font-mono text-3xl font-black tracking-widest text-brand">{c.display_code}</span>
+                {fresh.includes(c.id) ? <Badge tone="amber">{s.app.new}</Badge> : null}
+              </span>
               <span className="text-2xl font-bold tabular-nums">{kes(c.expected_total)}</span>
             </div>
             <div className="mt-1 text-lg font-semibold">{c.client_first_name ?? s.code.noDetails}</div>
@@ -76,7 +85,8 @@ export function Cashier({ shopId, initial }: { shopId: string; initial: CCode[] 
 }
 
 function PayPanel({ code, onClose }: { code: CCode; onClose: () => void }) {
-  const [amount, setAmount] = useState("");
+  // Starts at the staff total: the client checks it and taps. Change it only if he paid something else.
+  const [amount, setAmount] = useState(String(code.expected_total));
   const [voiding, setVoiding] = useState(false);
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
@@ -84,6 +94,13 @@ function PayPanel({ code, onClose }: { code: CCode; onClose: () => void }) {
   const { run, pending, error } = useAct();
   const n = amount === "" ? null : Number(amount);
   const atService = code.service_status === "pending" || code.service_status === "in_progress";
+
+  // Back to the list by itself once payment is recorded.
+  useEffect(() => {
+    if (done === null) return;
+    const t = setTimeout(onClose, 1500);
+    return () => clearTimeout(t);
+  }, [done, onClose]);
 
   if (done !== null) {
     return (
@@ -98,7 +115,7 @@ function PayPanel({ code, onClose }: { code: CCode; onClose: () => void }) {
 
   return (
     <div className="space-y-4">
-      <button onClick={onClose} className="min-h-12 font-semibold text-brand">← {s.cashier.title}</button>
+      <button onClick={onClose} className="min-h-12 font-semibold text-brand">← {s.app.back}</button>
       <div className="text-center">
         <div className="glow font-mono text-6xl font-black tracking-[0.2em] text-brand">{code.display_code}</div>
         <div className="text-xl font-semibold">{code.client_first_name ?? "—"}</div>
@@ -116,7 +133,6 @@ function PayPanel({ code, onClose }: { code: CCode; onClose: () => void }) {
           <Field label={s.cashier.amountPaid}>
             <Input value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} inputMode="numeric" className="text-3xl font-bold tabular-nums" />
           </Field>
-          <Button variant="secondary" className="w-full" onClick={() => setAmount(String(code.expected_total))}>{s.cashier.sameAsTotal(kes(code.expected_total))}</Button>
           {n !== null && n !== code.expected_total ? <Notice tone="warn">{s.cashier.mismatch}</Notice> : null}
           <button disabled={pending || n === null}
             onClick={async () => { if (await run("pay_code", { p_code: code.id, p_amount_paid: n })) setDone(n); }}

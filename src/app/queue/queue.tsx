@@ -7,6 +7,8 @@ import { useAct } from "@/lib/use-act";
 import { useLive } from "@/lib/use-live";
 import { Badge, Button, Card, Field, Input, Notice, Empty } from "@/components/ui";
 import { ErrorNote } from "@/components/error-note";
+import { Sheet } from "@/components/sheet";
+import { useArrivals } from "@/lib/use-arrivals";
 
 type Line = { id: string; amount: number; note: string | null; mine: boolean };
 type QCode = {
@@ -19,19 +21,22 @@ export type QueueData = {
 
 type Svc = { name: string; price: number };
 
-export function Queue({ shopId, initial, services }: { shopId: string; initial: QueueData; services: Svc[] }) {
+export function Queue({ shopId, initial, services, openFirst = null }: {
+  shopId: string; initial: QueueData; services: Svc[]; openFirst?: string | null;
+}) {
   const { data, reload } = useLive<QueueData>("service_queue", { p_shop: shopId }, shopId, initial);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(openFirst);
   const { run, pending, error } = useAct();
   const router = useRouter();
   const mine = data.codes.filter((c) => c.mine);
   const unassigned = data.codes.filter((c) => !c.mine);
   const open = data.codes.find((c) => c.id === openId && c.mine);
-
-  if (open) return <CodeWork code={open} data={data} services={services} onClose={() => { setOpenId(null); reload(); }} reload={reload} />;
+  // A code sent to me pops open by itself, unless I'm already working on one.
+  const fresh = useArrivals(mine.map((c) => c.id), (id) => { if (!open) setOpenId(id); });
 
   return (
     <div className="space-y-5">
+      {open ? <Sheet><CodeWork code={open} data={data} services={services} onClose={() => { setOpenId(null); reload(); }} reload={reload} /></Sheet> : null}
       <ErrorNote code={error} />
       <Card className="flex items-center justify-between gap-3">
         <div>
@@ -48,7 +53,8 @@ export function Queue({ shopId, initial, services }: { shopId: string; initial: 
         <h2 className="text-lg font-bold">{s.queue.mine} ({mine.length})</h2>
         {mine.length === 0 ? <Empty>{s.queue.empty}</Empty> : null}
         {mine.map((c) => (
-          <button key={c.id} onClick={() => setOpenId(c.id)} className="block w-full rounded-3xl border border-brand/50 bg-gradient-to-br from-brand/10 to-surface p-4 text-left active:scale-[0.99]">
+          <button key={c.id} onClick={() => setOpenId(c.id)}
+            className={`block w-full rounded-3xl border border-brand/50 bg-gradient-to-br from-brand/10 to-surface p-4 text-left active:scale-[0.99] ${fresh.includes(c.id) ? "ring-2 ring-brand/60" : ""}`}>
             <div className="flex items-center justify-between">
               <span className="font-mono text-3xl font-black tracking-widest text-brand">{c.display_code}</span>
               <Badge tone={c.service_status === "in_progress" ? "green" : "amber"}>{s.code.service[c.service_status]}</Badge>
@@ -102,6 +108,9 @@ function CodeWork({ code, data, services, onClose, reload }: { code: QCode; data
   const [handing, setHanding] = useState(false);
   const { run, pending, error } = useAct();
   const total = code.lines.reduce((a, l) => a + l.amount, 0);
+  const quick = services.length > 0 || data.recent_amounts.length > 0;
+  // With one-tap buttons the typed form stays folded, so "Done" stays on screen.
+  const [typing, setTyping] = useState(!quick);
 
   const go = async (fn: string, args: Record<string, unknown>, close = false) => {
     const r = await run(fn, args);
@@ -111,7 +120,7 @@ function CodeWork({ code, data, services, onClose, reload }: { code: QCode; data
 
   return (
     <div className="space-y-4">
-      <button onClick={onClose} className="min-h-12 font-semibold text-brand">← {s.queue.title}</button>
+      <button onClick={onClose} className="min-h-12 font-semibold text-brand">← {s.app.back}</button>
       <div className="text-center">
         <div className="glow font-mono text-6xl font-black tracking-[0.2em] text-brand">{code.display_code}</div>
         <div className="text-xl font-semibold">{code.client_first_name ?? "—"}</div>
@@ -138,32 +147,35 @@ function CodeWork({ code, data, services, onClose, reload }: { code: QCode; data
           </div>
         ))}
         {code.lines.length ? <div className="border-t border-line pt-2 text-lg font-bold">{kes(total)}</div> : null}
+        <div className="text-sm font-semibold">{s.queue.addService}</div>
+        {services.length || data.recent_amounts.length ? (
+          <div className="flex flex-wrap gap-2">
+            {services.length ? services.map((x) => (
+              <button type="button" key={x.name} disabled={pending}
+                onClick={() => go("add_service_line", { p_code: code.id, p_amount: x.price, p_note: x.name })}
+                className="min-h-12 rounded-2xl border border-brand/40 bg-brand/10 px-3 font-semibold active:scale-95 disabled:opacity-50">
+                + {x.name} <span className="tabular-nums">{x.price}</span>
+              </button>
+            )) : data.recent_amounts.map((a) => (
+              <button type="button" key={a} disabled={pending}
+                onClick={() => go("add_service_line", { p_code: code.id, p_amount: a, p_note: null })}
+                className="min-h-12 rounded-xl border border-brand/40 bg-brand/10 px-3 font-semibold tabular-nums active:scale-95 disabled:opacity-50">+ {a}</button>
+            ))}
+          </div>
+        ) : null}
+        {!typing ? (
+          <button type="button" onClick={() => setTyping(true)} className="min-h-12 text-sm font-semibold text-brand">{s.queue.otherAmount}</button>
+        ) : (
         <form className="space-y-2" onSubmit={async (e) => {
           e.preventDefault();
           if (await go("add_service_line", { p_code: code.id, p_amount: Number(amount), p_note: note || null })) { setAmount(""); setNote(""); }
         }}>
-          <div className="text-sm font-semibold">{s.queue.addService}</div>
-          {services.length ? (
-            <div className="flex flex-wrap gap-2">
-              {services.map((x) => (
-                <button type="button" key={x.name} onClick={() => { setAmount(String(x.price)); setNote(x.name); }}
-                  className={`min-h-12 rounded-2xl border px-3 font-semibold ${note === x.name ? "border-brand bg-brand/15" : "border-line bg-surface-2"}`}>
-                  {x.name} <span className="tabular-nums">{x.price}</span>
-                </button>
-              ))}
-            </div>
-          ) : data.recent_amounts.length ? (
-            <div className="flex flex-wrap gap-2">
-              {data.recent_amounts.map((a) => (
-                <button type="button" key={a} onClick={() => setAmount(String(a))}
-                  className={`min-h-12 rounded-xl border px-3 font-semibold ${amount === String(a) ? "border-brand bg-brand-soft" : "border-line bg-surface"}`}>{a}</button>
-              ))}
-            </div>
-          ) : null}
+          {quick ? <div className="pt-1 text-sm text-muted">{s.queue.otherAmount}</div> : null}
           <Input value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder={s.queue.amount} className="text-2xl font-bold" required />
           <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder={s.queue.whatService} maxLength={60} />
           <Button variant="secondary" disabled={pending || !amount} className="w-full">{s.queue.add}</Button>
         </form>
+        )}
       </Card>
 
       <Button className="min-h-16 w-full text-lg" disabled={pending || code.lines.length === 0}

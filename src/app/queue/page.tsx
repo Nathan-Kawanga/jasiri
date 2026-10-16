@@ -3,15 +3,17 @@ import { s } from "@/lib/strings";
 import { Page } from "@/components/ui";
 import { Queue, type QueueData } from "./queue";
 
-export default async function QueuePage() {
+export default async function QueuePage({ searchParams }: PageProps<"/queue">) {
   const { supabase, shop } = await requireShopRole("service_staff");
+  const { open } = await searchParams;
   const [{ data }, { data: services }] = await Promise.all([
     supabase.rpc("service_queue", { p_shop: shop.shop_id }),
     supabase.rpc("my_services"),
   ]);
   return (
     <Page title={s.queue.title}>
-      <Queue shopId={shop.shop_id} initial={data as QueueData} services={(services ?? []) as { name: string; price: number }[]} />
+      <Queue shopId={shop.shop_id} initial={data as QueueData} services={(services ?? []) as { name: string; price: number }[]}
+        openFirst={typeof open === "string" ? open : null} />
     </Page>
   );
 }

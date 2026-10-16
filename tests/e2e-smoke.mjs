@@ -24,8 +24,7 @@ async function session(name) {
   const [id, pin] = users[name];
   await page.goto(`${BASE}/login`);
   await page.fill('input[name="identifier"]', id);
-  await page.fill('input[name="pin"]', pin);
-  await page.click('button[type="submit"]');
+  await page.fill('input[name="pin"]', pin); // the 6th digit signs in by itself
   await page.waitForURL(`${BASE}/`);
   return { ctx, page };
 }

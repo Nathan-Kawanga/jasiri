@@ -6,8 +6,8 @@ export const guides: Record<string, Guide> = {
     title: "Barber",
     who: "You cut. Every client you serve gets a code from your phone. That code is your proof of work.",
     steps: [
-      { h: "1. After the cut, tap New code", p: "Pick the client: Returning (search name or last digits), New (hand him the phone to type his name and number and tick the box), or No details if he refuses. From your day view, Start code on a booking picks him for you." },
-      { h: "2. Type what you charged", p: "Tap your services to fill the amount (set them up in My services), or type it. Then Make code." },
+      { h: "1. After the cut, tap New code", p: "Pick the client on the first screen: today's bookings are at the top, then New (hand him the phone to type his name and number and tick the box), No details if he refuses, and your client book (tap his name or search name or last digits)." },
+      { h: "2. Type what you charged", p: "Tap your services to fill the amount (set them up in My services), or type it. If you have only one service it is already ticked. Then Make code." },
       { h: "3. The client taps Confirm my code", p: "Show him the screen. His tap opens the code. The app tells you which service lady to send him to. The cashier can see the code at the same moment." },
       { h: "4. Check your earnings", p: "My earnings shows Cashier-confirmed codes (the client paid) and Self-recorded ones (not paid yet). Download Excel or PDF to hand to your boss." },
       { h: "5. Bring your shop on", p: "If your shop isn't on Jasiri yet, add it in Find your shop. You become its manager. Coworkers find it by name; two people already in the shop tap Yes to let each new person in. Hand the manager role to the owner when he joins." },
@@ -24,10 +24,10 @@ export const guides: Record<string, Guide> = {
     title: "Service staff",
     who: "You do head washes, massages and facials. Clients come to you with a code from their barber.",
     steps: [
-      { h: "1. Start my day", p: "Open My queue and tap Start my day so codes come to you. Tap Go off duty when you leave. It resets at midnight." },
-      { h: "2. A code arrives", p: "It appears in Sent to me by itself. If nobody was on duty, it waits in Unassigned: tap Take." },
-      { h: "3. The client taps to confirm", p: "Open the code when he reaches you and let him tap Client: tap to confirm." },
-      { h: "4. Type what you charged", p: "Tap your services (set them up in My services) or type the amount for each one. Tap Done – send to cashier. Your services also show on barbers' booking pages as extras." },
+      { h: "1. Open Jasiri", p: "Your queue is on the home screen. Taking your first code of the day puts you on duty, so the next codes come to you by themselves (or tap Start my day). Tap Go off duty when you leave. It resets at midnight." },
+      { h: "2. A code arrives", p: "A code sent to you pops open by itself and the phone buzzes. If nobody was on duty, it waits in Unassigned: tap Take." },
+      { h: "3. The client taps to confirm", p: "When he reaches you, let him tap Client: tap to confirm." },
+      { h: "4. Type what you charged", p: "Tap each service you did: one tap adds it (set them up in My services). Other service or amount lets you type one. Tap Done – send to cashier. Your services also show on barbers' booking pages as extras." },
       { h: "5. Other cases", p: "Client leaves without any service: No service. Someone else will do it: Hand to a colleague. Client only wants your services, no haircut: New service-only code." },
     ],
     rules: [
@@ -39,9 +39,9 @@ export const guides: Record<string, Guide> = {
     title: "Cashier",
     who: "You take the money. You never type who did the work; the codes already say it.",
     steps: [
-      { h: "1. Open Cashier", p: "Open codes appear by themselves with the barber, the service lady and the total they typed." },
+      { h: "1. Open Jasiri", p: "Open codes are on your home screen and appear by themselves with the barber, the service lady and the total they typed. Clients whose service is finished are at the top." },
       { h: "2. Client pays you", p: "Cash or M-Pesa, as he likes. The app does not record how he paid." },
-      { h: "3. Type what he actually paid", p: "Tap his code, type the amount (or tap Same as total), then let the client tap the green button to confirm. That tap marks the code paid. It happens once." },
+      { h: "3. Type what he actually paid", p: "Tap his code. The staff total is already filled in; change it only if he paid something else. Let the client tap the gold button to confirm. That tap marks the code paid, once, and you are back on the list." },
       { h: "4. Voids", p: "If a client leaves without paying, or a code is a mistake or duplicate, tap Void and pick a reason. Voids are counted per person." },
       { h: "5. End of day", p: "Daily summary shows what the till should hold. Payout sheet lists every person's paid codes; print it or download it." },
     ],

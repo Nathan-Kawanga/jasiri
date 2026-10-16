@@ -24,8 +24,8 @@ Read this, then `CLAUDE.md` and `README.md`, before changing anything.
 ## Hosted database status (as of the end of the cloud session)
 Applied: setup-all (initial), update 2 (photos), update 4 (lookup limits), update 8
 (repair = updates 5, 6, 7). **Confirm with Nathan that he ran update 9 (services and
-prices), update 10 (barber-first: a barber who adds a shop stays a barber) and update 11
-(payout sheet per code).**
+prices), update 10 (barber-first: a barber who adds a shop stays a barber), update 11
+(payout sheet per code) and update 12 (service staff go on duty by working).**
 
 ## Decisions made with Nathan (don't undo without asking)
 - No price list or commission shares. Staff type what they charged; cashier types what
@@ -53,6 +53,14 @@ prices), update 10 (barber-first: a barber who adds a shop stays a barber) and u
 - Payout sheet: one row per paid code, barber side then service staff side (Nathan's layout),
   with "Totals per person" underneath. Exports keep the barber amount on a code's first row
   only so columns add up. Falls back to rebuilding codes from payout_sheet before update 11.
+- Fewer taps (Nathan: friction kills adoption). Cashiers and service staff see their live
+  list on the home screen; pay/work panels open as full-screen sheets. A code sent to a
+  service lady pops open; cashier amount starts at the staff total and returns to the list
+  after paying; service buttons add in one tap; taking a code or adding a service puts
+  staff on duty (update 12); New code shows today's bookings, New/No details and the client
+  book on one screen; a lone service is pre-ticked; login submits on the 6th PIN digit.
+  Kept on purpose: the client's taps (Confirm my code, service confirm, cashier confirm)
+  are the proof the client was there. Don't remove them to save taps.
 - Marketplace (find barbers near you) is a later phase; current design was kept compatible.
 
 ## Pilot

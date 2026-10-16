@@ -14,8 +14,7 @@ async function signIn(id, pin) {
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(`${BASE}/login`);
   await page.fill('input[name="identifier"]', id);
-  await page.fill('input[name="pin"]', pin);
-  await page.click('button[type="submit"]');
+  await page.fill('input[name="pin"]', pin); // the 6th digit signs in by itself
   await page.waitForURL(`${BASE}/`);
   return page;
 }
@@ -24,19 +23,17 @@ const brian = await signIn("0711000002", "123456");
 const staffPages = { "Mary Wanjiru": await signIn("0722000001", "123456"), "Grace Achieng": await signIn("0722000002", "123456") };
 const cashier = await signIn("cashier@kinyozibora.test", "222222");
 
-// Service staff start their day (on duty) and wait on their queues; the cashier waits on the cashier screen.
+// Service staff and the cashier stay on their home screens: their live lists are there.
 for (const p of Object.values(staffPages)) {
-  await p.goto(`${BASE}/queue`);
   const onDuty = p.getByRole("button", { name: "Start my day (on duty)" });
   if (await onDuty.isVisible()) await onDuty.click();
   await p.getByRole("button", { name: "Go off duty" }).waitFor();
 }
-await cashier.goto(`${BASE}/cashier`);
+await cashier.getByText("Open codes").waitFor();
 
-// Barber: returning client, amount, make code, client confirms.
+// Barber: the client book is on the first screen; pick, amount, make code, client confirms.
 await brian.goto(`${BASE}/code/new`);
-await brian.getByRole("button", { name: "Returning client" }).click();
-await brian.locator("button.min-h-14").first().click();
+await brian.getByTestId("client").first().click();
 await brian.fill('input[inputmode="numeric"]', "300");
 await shot(brian, "1_amount");
 await brian.getByRole("button", { name: "Make code" }).dblclick(); // double tap must still make one code
@@ -50,10 +47,12 @@ await shot(brian, "3_send_to");
 console.log(`Code ${code} sent to ${sentTo}`);
 const mary = staffPages[sentTo.trim()];
 
-// Service staff: the code appears without reloading (realtime), client confirms, she adds her service.
-await mary.getByText(code).waitFor({ timeout: 15000 });
-await mary.getByText(code).click();
+// Service staff: the code pops open by itself (realtime), client confirms, she adds her service.
+await mary.getByRole("button", { name: "Client: tap to confirm" }).waitFor({ timeout: 15000 });
+if (!(await mary.getByRole("dialog").getByText(code).count())) errors.push("service staff popup shows a different code");
 await mary.getByRole("button", { name: "Client: tap to confirm" }).click();
+const other = mary.getByRole("button", { name: "Other service or amount" });
+if (await other.isVisible()) await other.click();
 await mary.getByPlaceholder("Amount (KES)").fill("100");
 await mary.getByPlaceholder("Service (optional, e.g. head wash)").fill("Head wash");
 await mary.getByRole("button", { name: "Add", exact: true }).click();
@@ -61,16 +60,16 @@ await mary.getByText("KES 100").first().waitFor();
 await shot(mary, "4_service");
 await mary.getByRole("button", { name: "Done – send to cashier" }).click();
 
-// Cashier: the code shows live with the total, client pays and taps.
+// Cashier: the code shows live on home with the total already filled in; the client taps.
 await cashier.getByText(code).waitFor({ timeout: 15000 });
 await cashier.getByText(code).click();
 await cashier.getByText("KES 400").first().waitFor();
-await cashier.getByRole("button", { name: /Same as total/ }).click();
 await shot(cashier, "5_pay");
 await cashier.getByRole("button", { name: /Client: tap to confirm you paid KES 400/ }).click();
 await cashier.getByText("Paid: KES 400").waitFor();
-await cashier.getByRole("button", { name: "Done" }).click();
-await cashier.getByText("Paid today").waitFor();
+// Back on the list by itself, code under Paid today.
+await cashier.getByRole("dialog").waitFor({ state: "detached", timeout: 5000 });
+await cashier.locator("div", { hasText: "Paid today" }).getByText(code).first().waitFor();
 await shot(cashier, "6_paid_list");
 
 // Barber's earnings show it as cashier-confirmed.

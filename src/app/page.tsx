@@ -11,6 +11,9 @@ import { Notice } from "@/components/ui";
 import { Icon, type IconName } from "@/components/icons";
 import { switchShop } from "./shop-actions";
 import { signOut } from "./auth-actions";
+import { Cashier, type CCode } from "./cashier/cashier";
+import { Queue, type QueueData } from "./queue/queue";
+import { AutoSubmitSelect } from "@/components/auto-submit-select";
 
 
 function Tile({ href, label, icon }: { href: string; label: string; icon: IconName }) {
@@ -51,10 +54,18 @@ export default async function Home() {
   }
   if (ctx.profile.suspended) redirect("/suspended");
   const { profile, shops, usableShops, current, roles, supabase } = ctx;
-  const { data: requests, error: requestsError } = current
-    ? await supabase.rpc("shop_join_requests", { p_shop: current.shop_id })
-    : { data: [], error: null };
   const has = (r: string) => roles.includes(r as never);
+  // Cashiers and service staff land straight on their live list: no extra tap to see tickets.
+  const inlineQueue = !!current && has("service_staff") && !has("barber");
+  const inlineCashier = !!current && has("cashier") && !has("barber") && !has("service_staff");
+  const none = { data: null, error: null };
+  const [{ data: requests, error: requestsError }, cash, queue, services] = await Promise.all([
+    current ? supabase.rpc("shop_join_requests", { p_shop: current.shop_id }) : { data: [], error: null },
+    inlineCashier ? supabase.rpc("cashier_codes", { p_shop: current!.shop_id }) : none,
+    inlineQueue ? supabase.rpc("service_queue", { p_shop: current!.shop_id }) : none,
+    inlineQueue ? supabase.rpc("my_services") : none,
+  ]);
+  const compact = inlineCashier || inlineQueue;
   const pending = shops.filter((m) => m.status === "pending");
   const first = profile.full_name.split(" ")[0];
   const avatar = photoUrl(profile.photo_path);
@@ -78,10 +89,14 @@ export default async function Home() {
           </div>
         </header>
 
-        <section className="mb-5">
-          <p className="text-muted">{greeting()},</p>
-          <h1 className="font-display text-4xl font-extrabold leading-tight">{first}</h1>
-        </section>
+        {compact ? (
+          <h1 className="mb-4 text-xl"><span className="text-muted">{greeting()},</span> <b className="font-display">{first}</b></h1>
+        ) : (
+          <section className="mb-5">
+            <p className="text-muted">{greeting()},</p>
+            <h1 className="font-display text-4xl font-extrabold leading-tight">{first}</h1>
+          </section>
+        )}
 
         {profile.subscription === "due" ? (
           <div className="mb-4"><Notice tone="warn">
@@ -102,10 +117,10 @@ export default async function Home() {
             </div>
             {usableShops.length > 1 ? (
               <form action={switchShop} className="flex gap-2 border-t border-line p-3">
-                <select name="shop_id" defaultValue={current.shop_id} className="min-h-12 flex-1 rounded-xl border border-line bg-surface-2 px-2 text-ink">
+                <AutoSubmitSelect name="shop_id" defaultValue={current.shop_id} aria-label={s.home.switchShop}
+                  className="min-h-12 flex-1 rounded-xl border border-line bg-surface-2 px-2 text-ink">
                   {usableShops.map((m) => <option key={m.shop_id} value={m.shop_id}>{m.name}</option>)}
-                </select>
-                <button className="min-h-12 rounded-xl bg-surface-2 px-3 font-semibold">{s.home.switchShop}</button>
+                </AutoSubmitSelect>
               </form>
             ) : null}
           </section>
@@ -119,10 +134,21 @@ export default async function Home() {
           <div key={m.membership_id} className="mb-3"><Notice tone="warn"><b>{m.name}</b>: {s.home.pending}</Notice></div>
         ))}
 
+        {inlineQueue && queue.data ? (
+          <section className="mb-6">
+            <Queue shopId={current!.shop_id} initial={queue.data as QueueData} services={(services.data ?? []) as { name: string; price: number }[]} />
+          </section>
+        ) : null}
+        {inlineCashier && cash.data ? (
+          <section className="mb-6">
+            <Cashier shopId={current!.shop_id} initial={cash.data as CCode[]} />
+          </section>
+        ) : null}
+
         <div className="grid grid-cols-2 gap-3">
           {current && has("barber") ? <HeroTile href="/code/new" label={s.home.newCode} hint={s.home.newCodeHint} icon="scissors" /> : null}
-          {current && has("service_staff") && !has("barber") ? <HeroTile href="/queue" label={s.home.queue} hint={s.home.queueHint} icon="sparkles" /> : null}
-          {current && has("cashier") && !has("barber") && !has("service_staff") ? <HeroTile href="/cashier" label={s.home.cashier} hint={s.home.cashierHint} icon="cash" /> : null}
+          {inlineQueue && !queue.data ? <HeroTile href="/queue" label={s.home.queue} hint={s.home.queueHint} icon="sparkles" /> : null}
+          {inlineCashier && !cash.data ? <HeroTile href="/cashier" label={s.home.cashier} hint={s.home.cashierHint} icon="cash" /> : null}
           {current && has("manager") && !has("barber") && !has("service_staff") && !has("cashier") ? <HeroTile href="/shop/admin" label={s.home.shopAdmin} hint={s.home.shopAdminHint} icon="users" /> : null}
           {current && has("service_staff") && has("barber") ? <Tile href="/queue" label={s.home.queue} icon="sparkles" /> : null}
           {current && has("service_staff") && !profile.is_barber ? <Tile href="/services" label={s.home.myServices} icon="list" /> : null}

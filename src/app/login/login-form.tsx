@@ -17,7 +17,12 @@ export function LoginForm({ next }: { next: string }) {
       </Field>
       <Field label={s.auth.pin}>
         <Input name="pin" type="password" inputMode="numeric" pattern="\d{6}" maxLength={6}
-               autoComplete="current-password" required />
+               autoComplete="current-password" required
+               onChange={(e) => {
+                 // The 6th digit signs in: no need to reach for the button.
+                 const f = e.currentTarget.form;
+                 if (!pending && /^\d{6}$/.test(e.currentTarget.value) && f?.checkValidity()) f.requestSubmit();
+               }} />
       </Field>
       <Button type="submit" disabled={pending} className="w-full">{pending ? s.app.loading : s.auth.signIn}</Button>
       <p className="text-center text-sm text-muted">{s.auth.forgotPin}</p>

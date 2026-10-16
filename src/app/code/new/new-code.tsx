@@ -5,10 +5,12 @@ import { s } from "@/lib/strings";
 import { read } from "@/lib/action";
 import { useAct } from "@/lib/use-act";
 import { normalizePhone } from "@/lib/phone";
+import { time } from "@/lib/format";
 import { Button, Card, Field, Input, Notice } from "@/components/ui";
 import { ErrorNote } from "@/components/error-note";
 
 export type Preselected = { bookingId: string; firstName: string; services?: string[] };
+export type TodayBooking = Preselected & { at: string };
 type Client = { id: string; first_name: string; phone: string; visits: number; due: boolean };
 type Who =
   | { kind: "returning"; client: Client }
@@ -16,15 +18,27 @@ type Who =
   | { kind: "anonymous" }
   | { kind: "booking"; bookingId: string; firstName: string };
 
-export function NewCode({ shopId, barberName, preselected, services }: {
+export function NewCode({ shopId, barberName, preselected, services, bookings = [] }: {
   shopId: string; barberName: string; preselected: Preselected | null; services: { name: string; price: number }[];
+  bookings?: TodayBooking[];
 }) {
   const [who, setWho] = useState<Who | null>(preselected ? { kind: "booking", ...preselected } : null);
-  const [mode, setMode] = useState<"pick" | "search" | "new">("pick");
-  const initialPicked = (preselected?.services ?? []).filter((n) => services.some((x) => x.name === n));
-  const [picked, setPicked] = useState<string[]>(initialPicked);
+  const [mode, setMode] = useState<"pick" | "new">("pick");
   const sumOf = (names: string[]) => services.filter((x) => names.includes(x.name)).reduce((a, x) => a + x.price, 0);
+  // Booked services are ticked for him; a barber with a single service has it ticked already.
+  const startPicks = (pre: Preselected | null) => {
+    const fromBooking = (pre?.services ?? []).filter((n) => services.some((x) => x.name === n));
+    return fromBooking.length ? fromBooking : services.length === 1 ? [services[0].name] : [];
+  };
+  const initialPicked = startPicks(preselected);
+  const [picked, setPicked] = useState<string[]>(initialPicked);
   const [amount, setAmount] = useState(initialPicked.length ? String(sumOf(initialPicked)) : "");
+  const pickBooking = (b: TodayBooking) => {
+    const p = startPicks(b);
+    setPicked(p);
+    setAmount(p.length ? String(sumOf(p)) : "");
+    setWho({ kind: "booking", bookingId: b.bookingId, firstName: b.firstName });
+  };
   const toggle = (n: string) => {
     const next = picked.includes(n) ? picked.filter((x) => x !== n) : [...picked, n];
     setPicked(next);
@@ -44,17 +58,26 @@ export function NewCode({ shopId, barberName, preselected, services }: {
   }
 
   if (!who) {
-    if (mode === "search") return <ClientSearch onPick={(c) => setWho({ kind: "returning", client: c })} onBack={() => setMode("pick")} />;
     if (mode === "new") return <NewClientForm shopId={shopId} barberName={barberName}
       onDone={(firstName, phone) => setWho({ kind: "new", firstName, phone })}
       onMine={(c) => setWho({ kind: "returning", client: c })} onBack={() => setMode("pick")} />;
+    // One screen: today's bookings, new / no details, and the client book to search.
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-bold">{s.code.whoIsClient}</h2>
-        <Button className="min-h-16 w-full text-lg" onClick={() => setMode("search")}>{s.code.returning}</Button>
-        <Button className="min-h-16 w-full text-lg" variant="secondary" onClick={() => setMode("new")}>{s.code.newClient}</Button>
-        <Button className="min-h-16 w-full text-lg" variant="secondary" onClick={() => setWho({ kind: "anonymous" })}>{s.code.noDetails}</Button>
-        <p className="text-sm text-muted">{s.code.noDetailsHint}</p>
+        {bookings.map((b) => (
+          <button key={b.bookingId} onClick={() => pickBooking(b)}
+            className="flex min-h-14 w-full items-center justify-between rounded-2xl border border-brand/50 bg-brand/10 px-4 text-left">
+            <span className="text-lg font-bold">{b.firstName || "—"}</span>
+            <span className="font-semibold text-amber-200 tabular-nums">{s.code.bookedAt(time(b.at))}</span>
+          </button>
+        ))}
+        <div className="grid grid-cols-2 gap-2">
+          <Button className="min-h-14" onClick={() => setMode("new")}>{s.code.newClient}</Button>
+          <Button className="min-h-14" variant="secondary" onClick={() => setWho({ kind: "anonymous" })}>{s.code.noDetails}</Button>
+        </div>
+        <p className="text-xs text-muted">{s.code.noDetailsHint}</p>
+        <ClientSearch onPick={(c) => setWho({ kind: "returning", client: c })} />
       </div>
     );
   }
@@ -67,7 +90,7 @@ export function NewCode({ shopId, barberName, preselected, services }: {
     <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); create(); }}>
       <Card className="flex items-center justify-between">
         <div className="text-xl font-bold">{label}</div>
-        {who.kind !== "booking" ? <button type="button" className="min-h-12 px-2 font-semibold text-brand" onClick={() => { setWho(null); setMode("pick"); }}>{s.app.cancel}</button> : null}
+        {who.kind !== "booking" || !preselected ? <button type="button" className="min-h-12 px-2 font-semibold text-brand" onClick={() => { setWho(null); setMode("pick"); }}>{s.app.cancel}</button> : null}
       </Card>
       <ErrorNote code={error} />
       {services.length ? (
@@ -92,7 +115,7 @@ export function NewCode({ shopId, barberName, preselected, services }: {
   );
 }
 
-function ClientSearch({ onPick, onBack }: { onPick: (c: Client) => void; onBack: () => void }) {
+function ClientSearch({ onPick }: { onPick: (c: Client) => void }) {
   const [q, setQ] = useState("");
   const [list, setList] = useState<Client[] | null>(null);
   useEffect(() => {
@@ -103,16 +126,16 @@ function ClientSearch({ onPick, onBack }: { onPick: (c: Client) => void; onBack:
   }, [q]);
   return (
     <div className="space-y-3">
-      <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={s.code.searchClients} autoFocus />
+      <div className="pt-2 text-sm font-semibold text-muted">{s.code.returning}</div>
+      <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={s.code.searchClients} type="search" />
       {list === null ? <p className="text-muted">{s.app.loading}</p> : list.length === 0 ? <p className="text-muted">{s.code.notInBook}</p> : null}
       {list?.map((c) => (
-        <button key={c.id} onClick={() => onPick(c)}
+        <button key={c.id} data-testid="client" onClick={() => onPick(c)}
                 className="flex min-h-14 w-full items-center justify-between rounded-xl border border-line bg-surface px-4 text-left">
           <span className="text-lg font-bold">{c.first_name}</span>
           <span className="text-muted tabular-nums">…{c.phone.slice(-3)}</span>
         </button>
       ))}
-      <Button variant="ghost" onClick={onBack}>{s.app.back}</Button>
     </div>
   );
 }
